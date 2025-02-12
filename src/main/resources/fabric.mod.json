@@ -1,0 +1,26 @@
+{
+  "schemaVersion": 1,
+  "id": "masutils",
+  "version": "${version}",
+  "name": "MasUtils",
+  "description": "A bag of utils for Hypixel Skyblock",
+  "authors": [],
+  "contact": {},
+  "license": "Apache-2.0",
+  "icon": "assets/masutils/icon.png",
+  "environment": "client",
+  "entrypoints": {
+    "client": [
+      "ru.massonnn.masutils.client.MasutilsClient"
+    ]
+  },
+  "mixins": [
+    "masutils.mixins.json"
+  ],
+  "depends": {
+    "fabricloader": ">=${loader_version}",
+    "fabric": "*",
+    "minecraft": "${minecraft_version}",
+    "yet_another_config_lib_v3": ">={yacl_version}"
+  }
+}
