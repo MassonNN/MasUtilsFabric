@@ -4,8 +4,11 @@
   "version": "${version}",
   "name": "MasUtils",
   "description": "A bag of utils for Hypixel Skyblock",
-  "authors": [],
-  "contact": {},
+  "authors": ["MassonNn"],
+  "contact": {
+    "email": "me@ilyalyapin.ru",
+    "homepage": ""
+  },
   "license": "Apache-2.0",
   "icon": "assets/masutils/icon.png",
   "environment": "client",

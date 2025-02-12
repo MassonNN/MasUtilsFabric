@@ -4,5 +4,5 @@ public enum CorpseType {
     LAPIZ,
     UMBER,
     TUNGSTEN,
-    VANGUARD;
+    VANGUARD
 }
