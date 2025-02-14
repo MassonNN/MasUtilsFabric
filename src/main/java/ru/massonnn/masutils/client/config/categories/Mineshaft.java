@@ -15,6 +15,7 @@ import java.awt.*;
 public class Mineshaft {
     public static ConfigCategory create(MasUtilsConfig defaults, MasUtilsConfig config) {
         return ConfigCategory.createBuilder()
+                .name(Text.translatable("masutils.config.mineshaft"))
                 .option(
                         Option.<Boolean>createBuilder()
                                 .name(Text.translatable("masutils.config.mineshaft.toggle"))
@@ -123,6 +124,7 @@ public class Mineshaft {
                                 .build()
                 )
                 .group(OptionGroup.createBuilder()
+                        .name(Text.translatable("masutils.config.mineshaft.esp"))
                         .option(
                                 Option.<Boolean>createBuilder()
                                         .name(Text.translatable("masutils.config.mineshaft.esp.toggle"))

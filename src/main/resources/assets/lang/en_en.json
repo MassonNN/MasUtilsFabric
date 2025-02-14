@@ -1,8 +1,0 @@
-{
-  "masutils.config.general": "General",
-  "masutils.config.general.updateNotifications": "Send notifications when new version of mod is released",
-  "masutils.config.mineshaft.toggle": "Toggle mineshaft features",
-  "masutils.config.mineshaft.toggle.@Tooltip": "You can fully disable all features of this category",
-  "masutils.config.mineshaft.corpseFinder": "Corpse finder",
-  "masutils.config.mineshaft.corpseFinder.@Tooltip": "Create ESPs to all corpses in a mineshaft"
-}

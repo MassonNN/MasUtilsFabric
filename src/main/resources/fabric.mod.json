@@ -15,6 +15,9 @@
   "entrypoints": {
     "client": [
       "ru.massonnn.masutils.client.MasutilsClient"
+    ],
+    "modmenu": [
+      "ru.massonnn.masutils.client.compatibility.modmenu.ModMenuEntry"
     ]
   },
   "mixins": [
@@ -24,6 +27,14 @@
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
     "minecraft": "${minecraft_version}",
-    "yet_another_config_lib_v3": ">={yacl_version}"
+    "yet_another_config_lib_v3": ">=${yacl_version}"
+  },
+  "custom": {
+    "modmenu": {
+      "links": {
+        "modmenu.discord": "https://discord.gg/bhKvEj3X6J",
+        "modmenu.modrinth": "https://modrinth.com/project/masutils"
+      }
+    }
   }
 }
