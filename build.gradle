@@ -1,15 +1,10 @@
-buildscript {
-    repositories {
-        mavenLocal()
-    }
-}
-
 plugins {
-    id 'fabric-loom' version '1.9-SNAPSHOT'
+    id 'fabric-loom' version '1.13.6'
     id 'maven-publish'
+    id "me.modmuss50.mod-publish-plugin" version "0.8.1"
 }
 
-version = project.mod_version
+version = "${project.mod_version}+${project.minecraft_version}"
 group = project.maven_group
 
 base {
@@ -18,20 +13,80 @@ base {
 
 
 repositories {
-    // Add repositories to retrieve artifacts from in here.
-    // You should only use this when depending on other mods because
-    // Loom adds the essential maven repositories to download Minecraft and libraries from automatically.
-    // See https://docs.gradle.org/current/userguide/declaring_repositories.html
-    // for more information about repositories.
     maven {
-        name 'Xander Maven'
-        url 'https://maven.isxander.dev/releases'
+        name = 'Maven Central'
+        url = 'https://repo.maven.apache.org/maven2'
     }
+
+    exclusiveContent {
+        forRepository {
+            maven { url "https://repo.codemc.io/repository/maven-public/" }
+        }
+
+        filter {
+            includeGroup "com.logisticscraft"
+        }
+    }
+
+    exclusiveContent {
+        forRepository {
+            maven { url = "https://maven.terraformersmc.com/releases" }
+        }
+
+        filter {
+            includeGroup "com.terraformersmc"
+            includeGroup "dev.emi"
+        }
+    }
+
+
+    exclusiveContent {
+        forRepository {
+            maven { url "https://maven.azureaaron.net/releases" }
+        }
+
+        filter {
+            includeGroup "net.azureaaron"
+        }
+    }
+
     maven {
-        name = "Terraformers"
-        url = "https://maven.terraformersmc.com/"
+        url = "https://maven.isxander.dev/releases"
+
+        content {
+            includeGroup "dev.isxander"
+            includeGroup "org.quiltmc.parsers"
+        }
+
+    maven {
+        name = "JitPack"
+        url = "https://jitpack.io"
     }
-}
+
+    maven {
+        url = "https://maven.azureaaron.net/releases"
+
+        content {
+            includeGroup "net.azureaaron"
+        }
+    }
+
+    maven {
+        url = "https://maven.azureaaron.net/snapshots"
+
+        content {
+            includeGroup "net.azureaaron"
+        }
+    }
+
+    maven {
+        url = "https://maven.notenoughupdates.org/releases"
+
+        content {
+            includeGroup "org.notenoughupdates.moulconfig"
+        }
+    }
+}}
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"
@@ -39,22 +94,25 @@ dependencies {
     modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
 
     modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
-    modImplementation "dev.isxander:yet-another-config-lib:${project.yacl_version}"
-    modImplementation("com.terraformersmc:modmenu:${project.modmenu_version}")
+
+    compileOnly "net.fabricmc.fabric-api:fabric-api:${project.fabric_version}"
+
+    include implementation("com.logisticscraft:occlusionculling:${project.occlusionculling_version}")
+    include modImplementation("net.azureaaron:hm-api:${project.hm_api_version}")
+    include modImplementation("net.azureaaron:dandelion:${project.dandelion_version}")
+    modImplementation("net.fabricmc:fabric-language-kotlin:${project.flk_version}")
 }
 
 processResources {
     inputs.property "version", project.version
     inputs.property "minecraft_version", project.minecraft_version
     inputs.property "loader_version", project.loader_version
-    inputs.property "yacl_version", project.yacl_version
     filteringCharset "UTF-8"
 
     filesMatching("fabric.mod.json") {
         expand "version": project.version,
                 "minecraft_version": project.minecraft_version,
-                "loader_version": project.loader_version,
-                "yacl_version": project.yacl_version
+                "loader_version": project.loader_version
     }
 }
 

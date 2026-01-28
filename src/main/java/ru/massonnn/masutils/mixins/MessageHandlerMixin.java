@@ -12,7 +12,8 @@ import ru.massonnn.masutils.client.events.ChatEvent;
 public class MessageHandlerMixin {
     @Inject(method = "onGameMessage", at = @At("HEAD"))
     private void masutils$monitorGsameMessage(Text message, boolean overlay, CallbackInfo ci) {
-        if (overlay) return;
+        if (overlay)
+            return;
         ChatEvent.RECEIVE_MESSAGE.invoker().onMessage(message);
         ChatEvent.RECEIVE_STRING.invoker().onMessage(message.getString());
     }

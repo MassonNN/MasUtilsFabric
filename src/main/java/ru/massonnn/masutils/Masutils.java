@@ -2,25 +2,49 @@ package ru.massonnn.masutils;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonObject;
 import net.fabricmc.api.ClientModInitializer;
-import net.fabricmc.fabric.api.client.command.v2.ClientCommandRegistrationCallback;
+import net.fabricmc.api.ModInitializer;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
-import ru.massonnn.masutils.client.commands.CommandRegistry;
+import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.util.Identifier;
+import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
+import ru.massonnn.masutils.client.events.ChatEvent;
+import ru.massonnn.masutils.client.events.LocationEvents;
+import ru.massonnn.masutils.client.events.MineshaftEvent;
+import ru.massonnn.masutils.client.features.MasutilsCommand;
+import ru.massonnn.masutils.client.features.Party;
+import ru.massonnn.masutils.client.features.PartyCommandHandler;
+import ru.massonnn.masutils.client.features.mineshaft.CorpseFinder;
+import ru.massonnn.masutils.client.features.mineshaft.MineshaftHinter;
+import ru.massonnn.masutils.client.hypixel.Location;
+import ru.massonnn.masutils.client.hypixel.LocationUtils;
+import ru.massonnn.masutils.client.hypixel.MineshaftType;
+import ru.massonnn.masutils.client.waypoints.WaypointManager;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 
-public class Masutils implements ClientModInitializer {
+public class Masutils implements ClientModInitializer, ModInitializer {
     // Namespace used in Fabric containers
     public static final String NAMESPACE = "masutils";
+    public static final Logger LOGGER = LoggerFactory.getLogger("MasUtils");
 
-    public static final ModContainer MOD_CONTAINER = FabricLoader.getInstance().getModContainer(NAMESPACE).orElseThrow();
+    public static final ModContainer MOD_CONTAINER = FabricLoader.getInstance().getModContainer(NAMESPACE)
+            .orElseThrow();
     public static final String VERSION = MOD_CONTAINER.getMetadata().getVersion().getFriendlyString();
     public static final Path CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(NAMESPACE);
     public static final Gson GSON = new GsonBuilder().create();
     private static Masutils INSTANCE;
+    public static boolean DEBUG = true;
+    private MineshaftType curMineshaft = MineshaftType.UNDEF;
+    private int tickCounter = 0;
 
     public static Masutils getInstance() {
         return INSTANCE;
@@ -28,23 +52,125 @@ public class Masutils implements ClientModInitializer {
 
     @Override
     public void onInitializeClient() {
+        INSTANCE = this;
         ClientTickEvents.END_CLIENT_TICK.register(this::tick);
         init();
-        applyCommands();
+
+        ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            String brand = handler.getBrand();
+            LocationUtils.setOnHypixel(brand != null && brand.toLowerCase().contains("hypixel"));
+        });
+
+        ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            LocationUtils.setOnHypixel(false);
+            LocationUtils.setOnSkyblock(false);
+        });
+
+        ChatEvent.RECEIVE_STRING.register(message -> {
+            if (message.startsWith("{") && message.endsWith("}") && message.contains("gametype")) {
+                try {
+                    JsonObject json = GSON.fromJson(message, JsonObject.class);
+                    if (json.has("gametype") && "SKYBLOCK".equals(json.get("gametype").getAsString())) {
+                        LocationUtils.setOnSkyblock(true);
+                        if (json.has("mode")) {
+                            LocationUtils.setLocation(Location.from(json.get("mode").getAsString()));
+                        }
+                        if (json.has("server")) {
+                            LocationUtils.setServer(json.get("server").getAsString());
+                        }
+                    }
+                } catch (Exception ignored) {
+                }
+            }
+        });
+
+        LocationEvents.ON_LOCATION_CHANGE.register(location -> {
+            if (location == Location.GLACITE_MINESHAFT) {
+                LOGGER.info("Detected Glacite Mineshaft location. Attempting to identify type...");
+                processMineshaftEntry();
+            } else {
+                if (this.curMineshaft != MineshaftType.UNDEF) {
+                    LOGGER.info("Leaving Mineshaft (Location changed to {})", location);
+                    this.curMineshaft = MineshaftType.UNDEF;
+                    MineshaftEvent.ON_LEAVE_MINESHAFT.invoker().onLeaveMineshaft();
+                }
+            }
+        });
+
+        MineshaftEvent.ON_ENTER_MINESHAFT.register(type -> {
+            LOGGER.info("Mineshaft Joined: {}", type);
+            new MineshaftHinter().onEnterMineshaft(type);
+        });
+        MineshaftEvent.ON_LEAVE_MINESHAFT.register(() -> {
+            LOGGER.info("Mineshaft Left");
+            CorpseFinder.getInstance().clearCorpses();
+            WaypointManager.clearWaypoints();
+        });
+    }
+
+    private void processMineshaftEntry() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.world != null && this.curMineshaft == MineshaftType.UNDEF) {
+            Scoreboard scb = client.world.getScoreboard();
+            MineshaftType type = MineshaftType.detectByScoreboard(scb);
+            if (type != MineshaftType.UNDEF) {
+                this.curMineshaft = type;
+                MineshaftEvent.ON_ENTER_MINESHAFT.invoker().onEnterMineshaft(type);
+            }
+        }
     }
 
     private void tick(MinecraftClient client) {
-        //
-        return;
-    }
+        tickCounter++;
 
-    private void applyCommands() {
-        CommandRegistry registry = new CommandRegistry();
-        registry.init();
-        ClientCommandRegistrationCallback.EVENT.register(registry::apply);
+        if (tickCounter % 20 == 0) {
+            CorpseFinder.getInstance().update();
+            if (client.world != null) {
+                LocationUtils.detectLocationFromScoreboard(client.world.getScoreboard());
+
+                // Active polling for mineshaft type if we are in one but type is unknown
+                if (LocationUtils.getLocation() == Location.GLACITE_MINESHAFT
+                        && this.curMineshaft == MineshaftType.UNDEF) {
+                    processMineshaftEntry();
+                }
+            }
+        }
+
+        PartyCommandHandler handler = Party.getCommandHandler();
+        if (handler != null) {
+            if (tickCounter % 40 == 0) {
+                handler.checkPing();
+            }
+            handler.onTimeUpdate();
+
+            if (tickCounter % 20 == 0 && client.player != null) {
+                handler.incrementBlocksIfNotInMineshaft();
+            }
+        }
     }
 
     private static void init() {
+        MasUtilsConfigManager configManager = new MasUtilsConfigManager();
+        configManager.init();
+        WaypointManager.applyHooks();
+        Party.initialize();
+        MasutilsCommand.initialize();
+    }
 
+    @Override
+    public void onInitialize() {
+
+    }
+
+    public void setCurrentMineshaft(MineshaftType type) {
+        this.curMineshaft = type;
+    }
+
+    public MineshaftType getCurrentMineshaft() {
+        return this.curMineshaft;
+    }
+
+    public static Identifier id(String path) {
+        return Identifier.of(NAMESPACE, path);
     }
 }
