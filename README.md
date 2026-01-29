@@ -4,7 +4,7 @@
 ## Key features
 ### 1. Mineshaft Mining
    - [ ] Mineshaft party mode (auto-transfer, auto-warp, exclude-warp)
-   - [ ] Mineshaft corpse finder
+   - [x] Mineshaft corpse finder
    - [ ] Mineshaft waypoint
    - [ ] Mineshaft stats (per session / total) [IN DEV]
    - [ ] Mineshaft type recognition and profit hinter

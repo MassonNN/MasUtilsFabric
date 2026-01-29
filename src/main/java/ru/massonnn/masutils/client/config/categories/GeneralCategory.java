@@ -2,6 +2,7 @@ package ru.massonnn.masutils.client.config.categories;
 
 import net.azureaaron.dandelion.systems.ConfigCategory;
 import net.azureaaron.dandelion.systems.Option;
+import net.azureaaron.dandelion.systems.OptionGroup;
 import net.minecraft.text.Text;
 import ru.massonnn.masutils.Masutils;
 import ru.massonnn.masutils.client.config.MasUtilsConfig;
@@ -12,13 +13,13 @@ public class GeneralCategory {
     public static ConfigCategory create(MasUtilsConfig defaults, MasUtilsConfig config) {
         return ConfigCategory.createBuilder()
                 .id(Masutils.id("config/general"))
-                .name(Text.translatable("skyblocker.config.general"))
+                .name(Text.translatable("masutils.config.general"))
                 .option(Option.<Boolean>createBuilder()
                         .name(Text.translatable("masutils.config.general.masterSwitch"))
                         .description(Text.translatable("masutils.config.general.masterSwitch.@Tooltip"))
                         .binding(defaults.general.masterSwitch,
-                                () -> config.general.checkForUpdates,
-                                newValue -> config.general.checkForUpdates = newValue)
+                                () -> config.general.masterSwitch,
+                                newValue -> config.general.masterSwitch = newValue)
                         .controller(ConfigUtils.createBooleanController())
                         .build())
                 .option(Option.<Boolean>createBuilder()

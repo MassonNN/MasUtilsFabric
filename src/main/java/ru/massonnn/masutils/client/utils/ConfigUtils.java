@@ -48,5 +48,4 @@ public class ConfigUtils {
 //                .build();
 //    }
 
-    //FIXME Would probably be a good idea to add a utility method for creating a waypoint type option
 }

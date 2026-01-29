@@ -20,10 +20,15 @@ import ru.massonnn.masutils.client.features.MasutilsCommand;
 import ru.massonnn.masutils.client.features.Party;
 import ru.massonnn.masutils.client.features.PartyCommandHandler;
 import ru.massonnn.masutils.client.features.mineshaft.CorpseFinder;
+import ru.massonnn.masutils.client.features.mineshaft.MineshaftESP;
 import ru.massonnn.masutils.client.features.mineshaft.MineshaftHinter;
+import ru.massonnn.masutils.client.features.qol.BlockHeadPlacement;
 import ru.massonnn.masutils.client.hypixel.Location;
 import ru.massonnn.masutils.client.hypixel.LocationUtils;
 import ru.massonnn.masutils.client.hypixel.MineshaftType;
+import ru.massonnn.masutils.client.utils.MasUtilsScheduler;
+import ru.massonnn.masutils.client.utils.render.MasutilsRenderPipeline;
+import ru.massonnn.masutils.client.utils.render.RenderHelper;
 import ru.massonnn.masutils.client.waypoints.WaypointManager;
 
 import org.slf4j.Logger;
@@ -59,11 +64,13 @@ public class Masutils implements ClientModInitializer, ModInitializer {
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             String brand = handler.getBrand();
             LocationUtils.setOnHypixel(brand != null && brand.toLowerCase().contains("hypixel"));
+            WaypointManager.clearWaypoints();
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
             LocationUtils.setOnHypixel(false);
             LocationUtils.setOnSkyblock(false);
+            WaypointManager.clearWaypoints();
         });
 
         ChatEvent.RECEIVE_STRING.register(message -> {
@@ -86,11 +93,9 @@ public class Masutils implements ClientModInitializer, ModInitializer {
 
         LocationEvents.ON_LOCATION_CHANGE.register(location -> {
             if (location == Location.GLACITE_MINESHAFT) {
-                LOGGER.info("Detected Glacite Mineshaft location. Attempting to identify type...");
                 processMineshaftEntry();
             } else {
                 if (this.curMineshaft != MineshaftType.UNDEF) {
-                    LOGGER.info("Leaving Mineshaft (Location changed to {})", location);
                     this.curMineshaft = MineshaftType.UNDEF;
                     MineshaftEvent.ON_LEAVE_MINESHAFT.invoker().onLeaveMineshaft();
                 }
@@ -98,11 +103,9 @@ public class Masutils implements ClientModInitializer, ModInitializer {
         });
 
         MineshaftEvent.ON_ENTER_MINESHAFT.register(type -> {
-            LOGGER.info("Mineshaft Joined: {}", type);
             new MineshaftHinter().onEnterMineshaft(type);
         });
         MineshaftEvent.ON_LEAVE_MINESHAFT.register(() -> {
-            LOGGER.info("Mineshaft Left");
             CorpseFinder.getInstance().clearCorpses();
             WaypointManager.clearWaypoints();
         });
@@ -150,11 +153,15 @@ public class Masutils implements ClientModInitializer, ModInitializer {
     }
 
     private static void init() {
-        MasUtilsConfigManager configManager = new MasUtilsConfigManager();
-        configManager.init();
+        MasutilsRenderPipeline.init();
+        MasUtilsConfigManager.init();
         WaypointManager.applyHooks();
         Party.initialize();
         MasutilsCommand.initialize();
+        MasUtilsScheduler.init();
+        BlockHeadPlacement.init();
+        MineshaftESP.init();
+        RenderHelper.init();
     }
 
     @Override

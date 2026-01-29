@@ -23,10 +23,13 @@
   "mixins": [
     "masutils.mixins.json"
   ],
+  "accessWidener": "masutils.accesswidener",
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
-    "minecraft": "1.21.8",
-    "fabric-rendering-v1": "*"
+    "minecraft": "1.21.10",
+    "fabric-rendering-v1": "*",
+    "fabric-language-kotlin": ">=1.11.0",
+    "dandelion": ">=1.0.0-alpha.10+1.21.10"
   }
 }

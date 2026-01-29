@@ -1,9 +1,13 @@
 package ru.massonnn.masutils.client.waypoints;
 
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.WorldRenderEvents;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
+import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
-import ru.massonnn.masutils.client.utils.RenderUtils;
+import net.minecraft.text.Text;
+import net.minecraft.util.math.Box;
+import ru.massonnn.masutils.client.events.WorldRenderExtractionCallback;
+import ru.massonnn.masutils.client.utils.render.RenderHelper;
+import ru.massonnn.masutils.client.utils.render.primitive.PrimitiveCollector;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -13,7 +17,7 @@ public class WaypointManager {
 
     public static void applyHooks() {
         ServerWorldEvents.LOAD.register((server, t) -> WaypointManager.clearWaypoints());
-        WorldRenderEvents.AFTER_TRANSLUCENT.register(WaypointManager::renderAllWaypoints);
+        WorldRenderExtractionCallback.EVENT.register(WaypointManager::extractRendering);
     }
 
     public static void addWaypoint(Waypoint waypoint) {
@@ -28,13 +32,40 @@ public class WaypointManager {
         waypoints.clear();
     }
 
-    public static void renderAllWaypoints(WorldRenderContext context) {
-        for (Waypoint waypoint : waypoints) {
-            switch (waypoint.getType()) {
-                case TEXT -> RenderUtils.renderText(context, waypoint);
-                case ESP -> RenderUtils.drawESPBox(context, waypoint);
-                default -> RenderUtils.drawESPBox(context, waypoint);
-            }
-        }
+    public static void extractRendering(PrimitiveCollector collector) {
+        waypoints.forEach(
+                waypoint -> {
+                    switch (waypoint.getType()) {
+                        case WaypointType.ESP -> {
+                            collector.submitOutlinedBox(
+                                    new Box(waypoint.getPosition()),
+                                    waypoint.getColor().getComponents(null),
+                                    waypoint.getColor().getAlpha(),
+                                    waypoint.getThickness(),
+                                    true
+                            );
+                            collector.submitText(Text.literal(waypoint.getName()), waypoint.getPosition().toCenterPos().add(0d, 1.0d, 0d), true);
+                        }
+                        case WaypointType.ESP_WITH_CURSOR_LINE -> {
+                            collector.submitOutlinedBox(
+                                    new Box(waypoint.getPosition()),
+                                    waypoint.getColor().getComponents(null),
+                                    waypoint.getColor().getAlpha(),
+                                    waypoint.getThickness(),
+                                    true
+                            );
+                            collector.submitText(Text.literal(waypoint.getName()), waypoint.getPosition().toCenterPos().add(0d, 1.0d, 0d), true);
+                            collector.submitCursorLine(
+                                    waypoint.getPosition().toCenterPos(),
+                                    waypoint.getColor().getComponents(null),
+                                    waypoint.getColor().getAlpha(),
+                                    waypoint.getThickness()
+                            );
+                        }
+                        default -> {}
+                    }
+
+                }
+        );
     }
 }

@@ -18,7 +18,9 @@ public class ModMessage {
     public static void sendModMessage(Text text) {
         if (MinecraftClient.getInstance().player != null) {
             MinecraftClient.getInstance().player.sendMessage(
-                    prefix.copy().append(Text.literal(" ")).append(text),
+                    prefix.copy().append(Text.literal(" ")).append(text.copy().styled(
+                                    style -> style.withColor(Formatting.WHITE).withBold(false)
+                    )),
                     false);
         }
     }

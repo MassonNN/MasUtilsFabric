@@ -31,5 +31,5 @@ public class Mineshaft {
 
     public boolean mineshaftCommands = false;
 
-    public int traceThickness = 4;
+    public float traceThickness = 4f;
 }

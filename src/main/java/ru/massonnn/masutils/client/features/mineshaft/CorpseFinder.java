@@ -48,7 +48,6 @@ public class CorpseFinder {
     }
 
     public void clearCorpses() {
-        Masutils.LOGGER.info("Clearing {} corpses", currentCorpses.size());
         currentCorpses.clear();
         WaypointManager.clearWaypoints();
     }
@@ -102,8 +101,7 @@ public class CorpseFinder {
             }
         }
         ModMessage.sendModMessage(Text.translatable("masutils.mineshaft.foundCorpse", corpse.type.name()));
-        Masutils.LOGGER.info("Found corpse: {} at {}", corpse.type, corpse.pos);
         this.currentCorpses.add(corpse);
-        WaypointManager.addWaypoint(new Waypoint(corpse.pos, corpse.type.name(), color, WaypointType.ESP));
+        WaypointManager.addWaypoint(new Waypoint(corpse.pos, corpse.type.name(), color, WaypointType.ESP, 10f));
     }
 }
