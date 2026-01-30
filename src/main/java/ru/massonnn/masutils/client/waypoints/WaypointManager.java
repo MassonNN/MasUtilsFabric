@@ -36,7 +36,7 @@ public class WaypointManager {
         waypoints.forEach(
                 waypoint -> {
                     switch (waypoint.getType()) {
-                        case WaypointType.ESP -> {
+                        case WaypointType.ESP_TEXT -> {
                             collector.submitOutlinedBox(
                                     new Box(waypoint.getPosition()),
                                     waypoint.getColor().getComponents(null),
@@ -45,6 +45,15 @@ public class WaypointManager {
                                     true
                             );
                             collector.submitText(Text.literal(waypoint.getName()), waypoint.getPosition().toCenterPos().add(0d, 1.0d, 0d), true);
+                        }
+                        case WaypointType.ESP -> {
+                            collector.submitOutlinedBox(
+                                    new Box(waypoint.getPosition()),
+                                    waypoint.getColor().getComponents(null),
+                                    waypoint.getColor().getAlpha(),
+                                    waypoint.getThickness(),
+                                    true
+                            );
                         }
                         case WaypointType.ESP_WITH_CURSOR_LINE -> {
                             collector.submitOutlinedBox(

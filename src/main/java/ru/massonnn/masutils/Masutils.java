@@ -22,6 +22,7 @@ import ru.massonnn.masutils.client.features.PartyCommandHandler;
 import ru.massonnn.masutils.client.features.mineshaft.CorpseFinder;
 import ru.massonnn.masutils.client.features.mineshaft.MineshaftESP;
 import ru.massonnn.masutils.client.features.mineshaft.MineshaftHinter;
+import ru.massonnn.masutils.client.features.mining.GrottoFinder;
 import ru.massonnn.masutils.client.features.qol.BlockHeadPlacement;
 import ru.massonnn.masutils.client.hypixel.Location;
 import ru.massonnn.masutils.client.hypixel.LocationUtils;
@@ -162,6 +163,7 @@ public class Masutils implements ClientModInitializer, ModInitializer {
         BlockHeadPlacement.init();
         MineshaftESP.init();
         RenderHelper.init();
+        GrottoFinder.initialize();
     }
 
     @Override

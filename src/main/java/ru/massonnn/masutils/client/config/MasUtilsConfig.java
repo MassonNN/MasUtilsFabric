@@ -7,4 +7,5 @@ public class MasUtilsConfig {
     public final DevConfig dev = new DevConfig();
     public final NucleusRunsConfig nucleusRuns = new NucleusRunsConfig();
     public final QoLConfig qol = new QoLConfig();
+    public final FiestaConfig fiestaConfig = new FiestaConfig();
 }
