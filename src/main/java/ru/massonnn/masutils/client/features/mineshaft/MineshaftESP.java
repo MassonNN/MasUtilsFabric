@@ -37,7 +37,7 @@ public class MineshaftESP {
                                     entity.getBlockPos(),
                                     "Mineshaft",
                                     MasUtilsConfigManager.get().mineshaft.mineshaftESP.mineshaftESPColor,
-                                    WaypointType.ESP,
+                                    WaypointType.ESP_WITH_CURSOR_LINE,
                                     MasUtilsConfigManager.get().mineshaft.traceThickness);
                             WaypointManager.addWaypoint(mineshaftWaypoint);
                         }

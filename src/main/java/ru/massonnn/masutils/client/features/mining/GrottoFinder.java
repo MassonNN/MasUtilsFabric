@@ -31,16 +31,15 @@ public class GrottoFinder {
     public static final Set<Block> MAGENTA_GLASS_PANES = new HashSet<>();
 
     private static boolean isScanning = false;
-    private static Map<ChunkPos, StructureData> detectedStructures = new HashMap<>();
-    private static Set<ChunkPos> scannedChunks = new HashSet<>();
+    private static final Map<ChunkPos, StructureData> detectedStructures = new HashMap<>();
+    private static final Set<ChunkPos> scannedChunks = new HashSet<>();
     private static World currentWorld = null;
 
     // Performance configuration
     private static final int MAX_BLOCKS_PER_CHUNK = 200; // Maximum magenta blocks to find before stopping
     private static final int SCAN_HEIGHT_ABOVE_SURFACE = 5; // How many blocks above surface to scan
-    private static final int SCAN_HEIGHT_BELOW_SURFACE = 50; // How many blocks below surface to scan (underground focus)
+    private static final int SCAN_HEIGHT_BELOW_SURFACE = 70; // How many blocks below surface to scan (underground focus)
     private static final int MIN_UNDERGROUND_Y = 10; // Minimum Y level to scan (avoid bedrock)
-    private static final boolean ENABLE_DEBUG_LOGS = false;
 
     public static final Map<String, StructureType> STRUCTURE_TYPES = new HashMap<>();
 
@@ -118,7 +117,7 @@ public class GrottoFinder {
         isScanning = true;
         lastScanX = Integer.MIN_VALUE;
         lastScanZ = Integer.MIN_VALUE;
-
+        ModMessage.sendModMessage(Text.translatable("masutils.config.fiesta.grottoFinder.start"));
         scanAllLoadedChunks();
     }
 
@@ -213,6 +212,7 @@ public class GrottoFinder {
                             net.minecraft.world.chunk.Chunk chunk = world.getChunk(structChunkPos.x, structChunkPos.z);
                             GrottoFinder.scanChunk(chunk, world);
                         } catch (Exception e) {
+                            Masutils.LOGGER.info("Exception on chunk rescanning: " + e.getMessage());
                         }
                     }
                 }
@@ -220,7 +220,7 @@ public class GrottoFinder {
         }
     }
 
-    private static java.util.Set<net.minecraft.util.math.ChunkPos> notifiedStructures = new java.util.HashSet<>();
+    private static final java.util.Set<net.minecraft.util.math.ChunkPos> notifiedStructures = new java.util.HashSet<>();
 
     private static void checkAndNotifyStructures(World world) {
         java.util.Set<net.minecraft.util.math.ChunkPos> processedStructureKeys = new java.util.HashSet<>();
@@ -283,7 +283,6 @@ public class GrottoFinder {
             net.minecraft.util.math.ChunkPos playerChunk = new net.minecraft.util.math.ChunkPos(client.player.getBlockPos());
             int viewDistance = client.options.getViewDistance().getValue();
 
-            int totalChunksInView = (viewDistance * 2 + 1) * (viewDistance * 2 + 1);
             int loadedChunksCount = 0;
             int unscannedLoadedChunks = 0;
 
@@ -343,6 +342,7 @@ public class GrottoFinder {
                                 lastScanZ = z;
                             }
                         } catch (Exception e) {
+                            Masutils.LOGGER.info("Exception in scanning all chunks: " + e.getMessage());
                         }
                     }
                 }
@@ -351,6 +351,7 @@ public class GrottoFinder {
     }
 
     public static void stopScanning() {
+        if (isScanning) ModMessage.sendModMessage(Text.translatable("masutils.config.fiesta.grottoFinder.stop"));
         isScanning = false;
     }
 
@@ -379,6 +380,7 @@ public class GrottoFinder {
             if (newWorld == null) {
                 detectedStructures.clear();
                 scannedChunks.clear();
+                notifiedStructures.clear();
             }
         }
     }
@@ -568,7 +570,6 @@ public class GrottoFinder {
         int paneCount = 0;
         int blockCount = 0;
         int magentaBlocksFound = 0;
-        int totalBlocksScanned = 0;
 
         int minY = Math.max(MIN_UNDERGROUND_Y, clientWorld.getBottomY());
         int chunkCenterX = chunkPos.getStartX() + 8;
@@ -583,10 +584,6 @@ public class GrottoFinder {
             net.minecraft.world.chunk.ChunkSection[] sections = chunk.getSectionArray();
 
             for (int x = 0; x < 16; x++) {
-                if (magentaBlocksFound > MAX_BLOCKS_PER_CHUNK) {
-                    break;
-                }
-
                 for (int z = 0; z < 16; z++) {
                     if (magentaBlocksFound > MAX_BLOCKS_PER_CHUNK) {
                         break;
@@ -603,13 +600,8 @@ public class GrottoFinder {
                             if (section != null && !section.isEmpty()) {
                                 BlockPos pos = new BlockPos(chunkStartX + x, y, chunkStartZ + z);
                                 Block block = section.getBlockState(x, y & 15, z).getBlock();
-
-                                if (block == Blocks.MAGENTA_STAINED_GLASS) {
+                                if (isMagentaGlass(block)) {
                                     blockCount++;
-                                    magentaBlocksFound++;
-                                    result.foundBlocks.add(pos);
-                                } else if (block == Blocks.MAGENTA_STAINED_GLASS_PANE) {
-                                    paneCount++;
                                     magentaBlocksFound++;
                                     result.foundBlocks.add(pos);
                                 }
@@ -617,53 +609,10 @@ public class GrottoFinder {
                         }
                     }
                 }
-
-                if (magentaBlocksFound > MAX_BLOCKS_PER_CHUNK) {
-                    break;
-                }
             }
         } catch (Exception e) {
-            for (int x = 0; x < 16; x++) {
-                if (magentaBlocksFound > MAX_BLOCKS_PER_CHUNK) {
-                    break;
-                }
-
-                for (int z = 0; z < 16; z++) {
-                    if (magentaBlocksFound > MAX_BLOCKS_PER_CHUNK) {
-                        break;
-                    }
-
-                    for (int y = minY; y <= maxY; y++) {
-                        if (magentaBlocksFound > MAX_BLOCKS_PER_CHUNK) {
-                            break;
-                        }
-
-                        BlockPos pos = new BlockPos(chunkStartX + x, y, chunkStartZ + z);
-
-                        try {
-                            Block block = clientWorld.getBlockState(pos).getBlock();
-
-                            if (block == Blocks.MAGENTA_STAINED_GLASS) {
-                                blockCount++;
-                                magentaBlocksFound++;
-                                result.foundBlocks.add(pos);
-                            } else if (block == Blocks.MAGENTA_STAINED_GLASS_PANE) {
-                                paneCount++;
-                                magentaBlocksFound++;
-                                result.foundBlocks.add(pos);
-                            }
-                        } catch (Exception ex) {
-                            Masutils.LOGGER.info("Cant scan chunk");
-                        }
-                    }
-                }
-
-                if (magentaBlocksFound > MAX_BLOCKS_PER_CHUNK) {
-                    break;
-                }
-            }
+            Masutils.LOGGER.info("Cannot check chunk due to exception: " + e.getMessage());
         }
-
 
         result.paneCount = paneCount;
         result.blockCount = blockCount;

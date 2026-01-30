@@ -1,12 +1,9 @@
 package ru.massonnn.masutils.client.waypoints;
 
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderContext;
-import net.fabricmc.fabric.api.client.rendering.v1.world.WorldRenderEvents;
 import net.fabricmc.fabric.api.event.lifecycle.v1.ServerWorldEvents;
 import net.minecraft.text.Text;
 import net.minecraft.util.math.Box;
 import ru.massonnn.masutils.client.events.WorldRenderExtractionCallback;
-import ru.massonnn.masutils.client.utils.render.RenderHelper;
 import ru.massonnn.masutils.client.utils.render.primitive.PrimitiveCollector;
 
 import java.util.ArrayList;

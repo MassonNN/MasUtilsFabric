@@ -49,6 +49,8 @@
   "masutils.config.fiesta": "Mining Fiesta",
   "masutils.config.fiesta.grottoFinder": "Fairy Grotto finder",
   "masutils.config.fiesta.grottoFinder.@Tooltip": "Scans world and shows you waypoints for fairy grottos",
+  "masutils.config.fiesta.grottoFinder.start": "Started scanning for grotto",
+  "masutils.config.fiesta.grottoFinder.stop": "Stopped scanning for grotto",
   "masutils.mineshaft.hint": "You have entered mineshaft of type: %s",
   "masutils.mineshaft.types.TOPA1": "TOPAZ (without Crystal)",
   "masutils.mineshaft.types.TOPA2": "TOPAZ (with Crystal)",
