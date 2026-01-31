@@ -11,7 +11,6 @@ public class ReducedWorldProvider extends WorldProvider {
         BlockPos pos = new BlockPos(x, y, z);
         BlockState state = this.world.getBlockState(pos);
 
-        //Fixes edge cases where stairs etc aren't treated as being full blocks for the use case
         boolean isException = state.isIn(BlockTags.STAIRS) || state.isIn(BlockTags.WALLS) || state.isIn(BlockTags.FENCES);
 
         return isException || this.world.getBlockState(pos).isOpaqueFullCube();

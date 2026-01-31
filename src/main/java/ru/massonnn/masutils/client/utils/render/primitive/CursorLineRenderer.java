@@ -21,15 +21,10 @@ public final class CursorLineRenderer implements PrimitiveRenderer<CursorLineRen
                 state.lineWidth
         );
 
-        // 1. Вычисляем относительные координаты (Мир -> Вид)
-        // Координаты цели минус координаты камеры
         float targetX = (float) (state.x - cameraState.pos.x);
         float targetY = (float) (state.y - cameraState.pos.y);
         float targetZ = (float) (state.z - cameraState.pos.z);
 
-        // 2. Вычисляем точку "у прицела"
-        // Чтобы линия не обрезалась, начнем её чуть впереди камеры (например, на 0.1 блока)
-        // Используем вектор направления взгляда из ориентации камеры
         Vector3f lookVec = new Vector3f(0, 0, -0.1f); // Направление "вперед" в OpenGL
         lookVec.rotate(cameraState.orientation);
 
@@ -42,7 +37,6 @@ public final class CursorLineRenderer implements PrimitiveRenderer<CursorLineRen
         float b = state.colourComponents[2];
         float a = state.alpha / 255f;
 
-        // 3. Рисуем линию
         line(buffer, startX, startY, startZ, targetX, targetY, targetZ, r, g, b, a, 0f, 1f, 0f);
     }
 

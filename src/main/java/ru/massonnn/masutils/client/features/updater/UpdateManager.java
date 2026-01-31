@@ -5,8 +5,8 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
-import org.jetbrains.annotations.NotNull;
 import ru.massonnn.masutils.Masutils;
 import ru.massonnn.masutils.client.utils.ModMessage;
 
@@ -25,7 +25,6 @@ import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
 public class UpdateManager {
-
     private static final String REPO = "MassonNn/MasUtilsFabric";
 
     private static final HttpClient client = HttpClient.newBuilder()
@@ -46,6 +45,9 @@ public class UpdateManager {
                     JsonArray releases = JsonParser.parseString(response.body()).getAsJsonArray();
                     ModVersion current = new ModVersion(Masutils.VERSION);
 
+                    String mcVersion = FabricLoader.getInstance().getModContainer("minecraft")
+                            .get().getMetadata().getVersion().getFriendlyString();
+
                     for (int i = 0; i < releases.size(); i++) {
                         JsonObject release = releases.get(i).getAsJsonObject();
                         String tag = release.get("tag_name").getAsString();
@@ -59,7 +61,11 @@ public class UpdateManager {
                                 JsonObject asset = assets.get(j).getAsJsonObject();
                                 String fileName = asset.get("name").getAsString();
 
-                                if (fileName.endsWith(".jar") && !fileName.contains("-sources") && !fileName.contains("-dev")) {
+                                if (fileName.endsWith(".jar") &&
+                                        !fileName.contains("-sources") &&
+                                        !fileName.contains("-dev") &&
+                                        fileName.contains("+" + mcVersion)) {
+
                                     return new VersionInfo(
                                             tag,
                                             asset.get("browser_download_url").getAsString(),
@@ -73,17 +79,25 @@ public class UpdateManager {
                 });
     }
 
-
     public static CompletableFuture<Path> download(VersionInfo info, Consumer<Boolean> callback) {
         return CompletableFuture.supplyAsync(() -> {
             try {
                 Path modsFolder = FabricLoader.getInstance().getGameDir().resolve("mods");
 
-                Optional<ModContainer> container = FabricLoader.getInstance().getModContainer("masutils");
-                Path targetPath = getPath(info, container, modsFolder);
+                // Помечаем старый файл на удаление
+                Path currentPath = Masutils.MOD_CONTAINER.getOrigin().getPaths().getFirst();
+                File currentFile = currentPath.toFile();
+                if (currentFile.exists() && currentFile.getName().endsWith(".jar")) {
+                    currentFile.deleteOnExit();
+                }
+
+                // Извлекаем имя файла из URL или формируем красивое
+                String url = info.getDownloadUrl();
+                String fileName = url.substring(url.lastIndexOf('/') + 1);
+                Path targetPath = modsFolder.resolve(fileName);
 
                 HttpRequest request = HttpRequest.newBuilder()
-                        .uri(URI.create(info.getDownloadUrl()))
+                        .uri(URI.create(url))
                         .header("User-Agent", "MasUtils-Updater")
                         .build();
 
@@ -104,31 +118,17 @@ public class UpdateManager {
         });
     }
 
-    private static @NotNull Path getPath(VersionInfo info, Optional<ModContainer> container, Path modsFolder) {
-        if (container.isPresent()) {
-            Path currentPath = container.get().getOrigin().getPaths().get(0);
-
-            File currentFile = currentPath.toFile();
-
-            if (currentFile.exists() && currentFile.getName().endsWith(".jar")) {
-                currentFile.deleteOnExit();
-            }
-        }
-
-        String newFileName = "MasUtils-" + info.getVersionName() + ".jar";
-        Path targetPath = modsFolder.resolve(newFileName);
-        return targetPath;
-    }
-
     public static void checkAndDownload(UpdateChannel channel) {
         check(channel).thenAccept(info -> {
             if (info != null) {
                 download(info, success -> {
-                    if (success) {
-                        ModMessage.sendModMessage(Text.translatable("masutils.update.success", info.getVersionName()));
-                    } else {
-                        ModMessage.sendErrorMessage(Text.translatable("masutils.update.failed", info.getVersionName()));
-                    }
+                    MinecraftClient.getInstance().execute(() -> {
+                        if (success) {
+                            ModMessage.sendModMessage(Text.translatable("masutils.update.success", info.getVersionName()));
+                        } else {
+                            ModMessage.sendErrorMessage(Text.translatable("masutils.update.failed", info.getVersionName()));
+                        }
+                    });
                 });
             }
         });

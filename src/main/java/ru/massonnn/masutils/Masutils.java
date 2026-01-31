@@ -30,6 +30,7 @@ import ru.massonnn.masutils.client.features.mineshaft.MineshaftHinter;
 import ru.massonnn.masutils.client.features.mining.GrottoFinder;
 import ru.massonnn.masutils.client.features.qol.BlockHeadPlacement;
 import ru.massonnn.masutils.client.features.updater.UpdateAction;
+import ru.massonnn.masutils.client.features.updater.UpdateChannel;
 import ru.massonnn.masutils.client.features.updater.UpdateManager;
 import ru.massonnn.masutils.client.features.updater.VersionInfo;
 import ru.massonnn.masutils.client.hypixel.Location;
@@ -48,7 +49,6 @@ import java.nio.file.Path;
 import java.util.concurrent.CompletableFuture;
 
 public class Masutils implements ClientModInitializer, ModInitializer {
-    // Namespace used in Fabric containers
     public static final String NAMESPACE = "masutils";
     public static final Logger LOGGER = LoggerFactory.getLogger("MasUtils");
 
@@ -128,23 +128,32 @@ public class Masutils implements ClientModInitializer, ModInitializer {
             if(!MasUtilsConfigManager.get().dev.telemetry) return;
             TelemetryManager.sendTelemetry();
         });
+        LocationEvents.JOIN.register(() -> {
+            if (MasUtilsConfigManager.get().general.checkForUpdates) {
+                UpdateChannel channel = MasUtilsConfigManager.get().general.updateChannel;
 
-        if (MasUtilsConfigManager.get().general.checkForUpdates) {
-            switch (MasUtilsConfigManager.get().general.updateAction) {
-                case UpdateAction.DOWNLOAD -> {
-                    UpdateManager.checkAndDownload(MasUtilsConfigManager.get().general.updateChannel);
-                }
-                case UpdateAction.NOTIFY -> {
-                    CompletableFuture<VersionInfo> info = UpdateManager.check(MasUtilsConfigManager.get().general.updateChannel);
-                    info.whenComplete((versionInfo, throwable) -> {
-                        if (versionInfo != null) {
-                            ModMessage.sendModMessage(Text.translatable("masutils.update.available", versionInfo.getVersionName()));
-                        }
-                    });
+                switch (MasUtilsConfigManager.get().general.updateAction) {
+                    case DOWNLOAD -> {
+                        UpdateManager.checkAndDownload(channel);
+                    }
+                    case NOTIFY -> {
+                        UpdateManager.check(channel).thenAccept(versionInfo -> {
+                            if (versionInfo != null) {
+                                MinecraftClient.getInstance().execute(() -> {
+                                    ModMessage.sendModMessage(Text.translatable(
+                                            "masutils.update.available",
+                                            versionInfo.getVersionName()
+                                    ));
+                                });
+                            }
+                        }).exceptionally(throwable -> {
+                            Masutils.LOGGER.error("Failed to check for updates", throwable);
+                            return null;
+                        });
+                    }
                 }
             }
-        }
-
+        });
     }
 
     private void processMineshaftEntry() {

@@ -11,7 +11,6 @@ public class OcclusionCuller {
 
     private final OcclusionCullingInstance instance;
 
-    // Reused objects to reduce allocation overhead
     private final Vec3d cameraPos = new Vec3d(0, 0, 0);
     private final Vec3d min = new Vec3d(0, 0, 0);
     private final Vec3d max = new Vec3d(0, 0, 0);

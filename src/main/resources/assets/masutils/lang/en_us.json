@@ -4,6 +4,7 @@
   "masutils.update.success": "Mod updated successfully! New version: %s",
   "masutils.update.failed": "Cant download new mod version (%s)",
   "masutils.update.available": "Newer version of mod is available: %s",
+  "masutils.update.latest": "Already latest update is installed: %s",
   "masutils.config.openhint": "Click to open mod config",
   "masutils.config.title": "MasUtils Configuration (version: %s)",
   "masutils.config.general": "General",
