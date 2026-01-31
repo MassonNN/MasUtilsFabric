@@ -13,6 +13,7 @@ import ru.massonnn.masutils.client.utils.ModMessage;
 import java.io.File;
 import java.io.InputStream;
 import java.net.URI;
+import java.net.URLDecoder;
 import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
@@ -93,7 +94,10 @@ public class UpdateManager {
 
                 // Извлекаем имя файла из URL или формируем красивое
                 String url = info.getDownloadUrl();
-                String fileName = url.substring(url.lastIndexOf('/') + 1);
+                String rawFileName = url.substring(url.lastIndexOf('/') + 1);
+
+                String fileName = URLDecoder.decode(rawFileName, StandardCharsets.UTF_8);
+
                 Path targetPath = modsFolder.resolve(fileName);
 
                 HttpRequest request = HttpRequest.newBuilder()
