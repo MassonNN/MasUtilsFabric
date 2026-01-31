@@ -4,7 +4,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import net.fabricmc.loader.api.FabricLoader;
-import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import ru.massonnn.masutils.Masutils;
@@ -21,7 +20,6 @@ import java.nio.charset.StandardCharsets;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
-import java.util.Optional;
 import java.util.concurrent.CompletableFuture;
 import java.util.function.Consumer;
 
@@ -85,14 +83,12 @@ public class UpdateManager {
             try {
                 Path modsFolder = FabricLoader.getInstance().getGameDir().resolve("mods");
 
-                // Помечаем старый файл на удаление
                 Path currentPath = Masutils.MOD_CONTAINER.getOrigin().getPaths().getFirst();
                 File currentFile = currentPath.toFile();
                 if (currentFile.exists() && currentFile.getName().endsWith(".jar")) {
                     currentFile.deleteOnExit();
                 }
 
-                // Извлекаем имя файла из URL или формируем красивое
                 String url = info.getDownloadUrl();
                 String rawFileName = url.substring(url.lastIndexOf('/') + 1);
 
