@@ -16,7 +16,6 @@ import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import ru.massonnn.masutils.client.config.MasUtilsConfig;
 import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
 import ru.massonnn.masutils.client.events.ChatEvent;
 import ru.massonnn.masutils.client.events.LocationEvents;
@@ -29,10 +28,8 @@ import ru.massonnn.masutils.client.features.mineshaft.MineshaftESP;
 import ru.massonnn.masutils.client.features.mineshaft.MineshaftHinter;
 import ru.massonnn.masutils.client.features.mining.GrottoFinder;
 import ru.massonnn.masutils.client.features.qol.BlockHeadPlacement;
-import ru.massonnn.masutils.client.features.updater.UpdateAction;
 import ru.massonnn.masutils.client.features.updater.UpdateChannel;
 import ru.massonnn.masutils.client.features.updater.UpdateManager;
-import ru.massonnn.masutils.client.features.updater.VersionInfo;
 import ru.massonnn.masutils.client.hypixel.Location;
 import ru.massonnn.masutils.client.hypixel.LocationUtils;
 import ru.massonnn.masutils.client.hypixel.MineshaftType;
@@ -46,7 +43,6 @@ import ru.massonnn.masutils.client.utils.render.RenderHelper;
 import ru.massonnn.masutils.client.waypoints.WaypointManager;
 
 import java.nio.file.Path;
-import java.util.concurrent.CompletableFuture;
 
 public class Masutils implements ClientModInitializer, ModInitializer {
     public static final String NAMESPACE = "masutils";
