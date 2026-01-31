@@ -4,6 +4,7 @@ import net.azureaaron.dandelion.systems.ConfigCategory;
 import net.azureaaron.dandelion.systems.Option;
 import net.azureaaron.dandelion.systems.OptionGroup;
 import net.azureaaron.dandelion.systems.controllers.FloatController;
+import net.azureaaron.dandelion.systems.controllers.StringController;
 import net.minecraft.text.Text;
 import ru.massonnn.masutils.Masutils;
 import ru.massonnn.masutils.client.config.MasUtilsConfig;
@@ -62,6 +63,14 @@ public class MineshaftCategory {
                                         () -> config.mineshaft.mineshaftParty.autoWarpToMineshaft,
                                         newValue -> config.mineshaft.mineshaftParty.autoWarpToMineshaft = newValue)
                                 .controller(ConfigUtils.createBooleanController())
+                                .build())
+                        .option(Option.<String>createBuilder()
+                                .name(Text.translatable("masutils.config.mineshaft.party.messageon"))
+                                .description(Text.translatable("masutils.config.mineshaft.party.messageon.@Tooltip"))
+                                .binding(defaults.mineshaft.mineshaftParty.messageOnMineshaftSpawned,
+                                        () -> config.mineshaft.mineshaftParty.messageOnMineshaftSpawned,
+                                        newValue -> config.mineshaft.mineshaftParty.messageOnMineshaftSpawned = newValue)
+                                .controller(StringController.createBuilder().build())
                                 .build())
                         .build());
 

@@ -72,7 +72,7 @@ public class CorpseFinder {
 
                     CorpseType type = null;
                     Color color = Color.WHITE;
-                    if (helmetId != "") {
+                    if (!helmetId.isEmpty()) {
                         if (helmetId.contains("LAPIS_ARMOR_HELMET")) {
                             type = CorpseType.LAPIZ;
                             color = Color.BLUE;

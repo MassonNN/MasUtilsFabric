@@ -5,7 +5,7 @@ import java.util.regex.Pattern;
 
 public class PartyChatParser {
     private static final Pattern PARTY_MESSAGE_PATTERN = Pattern.compile(
-            ".*Party.*>\\s*([^:]+?)\\s*:\\s*(.*)"
+            ".*Party.*>\\s*(?:\\[(.*?)\\]\\s+)?([^:]+?)\\s*:\\s*(.*)"
     );
 
     public static PartyMessage parsePartyMessage(String message) {
@@ -13,9 +13,10 @@ public class PartyChatParser {
         Matcher matcher = PARTY_MESSAGE_PATTERN.matcher(plainMessage);
         
         if (matcher.find()) {
-            String playerName = matcher.group(1).trim();
-            String messageText = matcher.group(2).trim();
-            return new PartyMessage(playerName, messageText);
+            String prefix = matcher.group(1).trim();
+            String playerName = matcher.group(2).trim();
+            String messageText = matcher.group(3).trim();
+            return new PartyMessage(prefix, playerName, messageText);
         }
         
         return null;
@@ -24,8 +25,10 @@ public class PartyChatParser {
     public static class PartyMessage {
         public final String playerName;
         public final String message;
+        public final String prefix;
 
-        public PartyMessage(String playerName, String message) {
+        public PartyMessage(String prefix, String playerName, String message) {
+            this.prefix = prefix;
             this.playerName = playerName;
             this.message = message;
         }

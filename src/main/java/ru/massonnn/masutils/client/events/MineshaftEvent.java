@@ -24,6 +24,14 @@ public class MineshaftEvent {
                 }
             });
 
+    public static final Event<OnSpawnedMineshaft> ON_SPAWNED_MINESHAFT_EVENT = EventFactory.createArrayBacked(
+            OnSpawnedMineshaft.class,
+            callbacks -> () -> {
+                for (MineshaftEvent.OnSpawnedMineshaft callback : callbacks) {
+                    callback.onSpawnedMineshaft();
+                }
+            });
+
     @Environment(EnvType.CLIENT)
     @FunctionalInterface
     public interface OnEnterMineshaft {
@@ -34,5 +42,11 @@ public class MineshaftEvent {
     @FunctionalInterface
     public interface OnLeaveMineshaft {
         void onLeaveMineshaft();
+    }
+
+    @Environment(EnvType.CLIENT)
+    @FunctionalInterface
+    public interface OnSpawnedMineshaft {
+        void onSpawnedMineshaft();
     }
 }

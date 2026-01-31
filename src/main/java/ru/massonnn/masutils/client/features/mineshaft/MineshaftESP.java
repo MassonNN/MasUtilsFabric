@@ -33,6 +33,7 @@ public class MineshaftESP {
                         return false;
                     }).forEach(entity -> {
                         if (mineshaftWaypoint == null) {
+                            MineshaftEvent.ON_SPAWNED_MINESHAFT_EVENT.invoker().onSpawnedMineshaft();
                             mineshaftWaypoint = new Waypoint(
                                     entity.getBlockPos(),
                                     "Mineshaft",

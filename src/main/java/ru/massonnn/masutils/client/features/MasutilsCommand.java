@@ -5,7 +5,9 @@ import net.minecraft.client.MinecraftClient;
 import net.minecraft.entity.EntityType;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.massonnn.masutils.Masutils;
 import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
+import ru.massonnn.masutils.client.telemetry.TelemetryManager;
 import ru.massonnn.masutils.client.utils.MasUtilsScheduler;
 import ru.massonnn.masutils.client.utils.ModMessage;
 import ru.massonnn.masutils.client.waypoints.Waypoint;
@@ -27,6 +29,7 @@ public class MasutilsCommand {
                             .executes(context -> openConfig())
 //                            .then(literal(""))
                             .then(literal("config").executes(context -> openConfig()))
+                            .then(literal("telemetry").executes(context -> sendTelemetry()))
                             .then(literal("waypoint").executes(context -> createWaypoint()))
             );
         });
@@ -34,6 +37,12 @@ public class MasutilsCommand {
 
     private static int openConfig() {
         MasUtilsScheduler.schedule(MasUtilsConfigManager::openConfigScreen);
+        return 1;
+    }
+
+    private static int sendTelemetry() {
+        Masutils.LOGGER.info("Request to send telemetry");
+        TelemetryManager.sendTelemetry();
         return 1;
     }
 

@@ -5,6 +5,7 @@ import com.google.gson.GsonBuilder;
 import com.google.gson.JsonObject;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.api.ModInitializer;
+import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientLifecycleEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayConnectionEvents;
 import net.fabricmc.loader.api.FabricLoader;
@@ -12,6 +13,8 @@ import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.scoreboard.Scoreboard;
 import net.minecraft.util.Identifier;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
 import ru.massonnn.masutils.client.events.ChatEvent;
 import ru.massonnn.masutils.client.events.LocationEvents;
@@ -27,13 +30,13 @@ import ru.massonnn.masutils.client.features.qol.BlockHeadPlacement;
 import ru.massonnn.masutils.client.hypixel.Location;
 import ru.massonnn.masutils.client.hypixel.LocationUtils;
 import ru.massonnn.masutils.client.hypixel.MineshaftType;
+import ru.massonnn.masutils.client.telemetry.ColorAdapter;
+import ru.massonnn.masutils.client.telemetry.TelemetryManager;
+import ru.massonnn.masutils.client.utils.CommandExecutor;
 import ru.massonnn.masutils.client.utils.MasUtilsScheduler;
 import ru.massonnn.masutils.client.utils.render.MasutilsRenderPipeline;
 import ru.massonnn.masutils.client.utils.render.RenderHelper;
 import ru.massonnn.masutils.client.waypoints.WaypointManager;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import java.nio.file.Path;
 
@@ -46,7 +49,10 @@ public class Masutils implements ClientModInitializer, ModInitializer {
             .orElseThrow();
     public static final String VERSION = MOD_CONTAINER.getMetadata().getVersion().getFriendlyString();
     public static final Path CONFIG_DIR = FabricLoader.getInstance().getConfigDir().resolve(NAMESPACE);
-    public static final Gson GSON = new GsonBuilder().create();
+    public static final Gson GSON = new GsonBuilder()
+            .registerTypeAdapter(java.awt.Color.class, new ColorAdapter())
+            .setPrettyPrinting()
+            .create();
     private static Masutils INSTANCE;
     public static boolean DEBUG = true;
     private MineshaftType curMineshaft = MineshaftType.UNDEF;
@@ -103,12 +109,17 @@ public class Masutils implements ClientModInitializer, ModInitializer {
             }
         });
 
-        MineshaftEvent.ON_ENTER_MINESHAFT.register(type -> {
-            new MineshaftHinter().onEnterMineshaft(type);
-        });
+        MineshaftEvent.ON_ENTER_MINESHAFT.register(type -> new MineshaftHinter().onEnterMineshaft(type));
         MineshaftEvent.ON_LEAVE_MINESHAFT.register(() -> {
             CorpseFinder.getInstance().clearCorpses();
             WaypointManager.clearWaypoints();
+        });
+        MineshaftEvent.ON_SPAWNED_MINESHAFT_EVENT.register(() -> new MineshaftHinter().onSpawnedMineshaft());
+
+        // Telemetry
+        ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
+            if(!MasUtilsConfigManager.get().dev.telemetry) return;
+            TelemetryManager.sendTelemetry();
         });
     }
 
@@ -164,6 +175,7 @@ public class Masutils implements ClientModInitializer, ModInitializer {
         MineshaftESP.init();
         RenderHelper.init();
         GrottoFinder.initialize();
+        CommandExecutor.init();
     }
 
     @Override

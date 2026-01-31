@@ -37,7 +37,7 @@
 ### 5. Quality of Life
    - [x] Block head placement for items like abiphone
 ### 6. Mining Fiesta
-   - [ ] Fairy Grotto finder
+   - [x] Fairy Grotto finder
    - [ ] Refined mineral and Glossy Gemstone alerts and counter
    - [ ] Personal bests and other statistics for fiestas
 ### 7. Structure Mining

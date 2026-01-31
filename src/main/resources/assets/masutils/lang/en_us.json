@@ -32,6 +32,7 @@
   "masutils.config.mineshaft.party.autotransfer.@Tooltip": "Automatically transfer party leadership to who spawned mineshaft",
   "masutils.config.mineshaft.party.messageon": "Message sent when mineshaft spawned",
   "masutils.config.mineshaft.party.messageon.@Tooltip": "Can be used for compatibility with another mods, you can send !pt in party chat",
+  "masutils.mineshaft.party.entered": "[MasUtils] Entered mineshaft of type: %s",
   "masutils.config.mineshaft.esp": "Mineshaft Waypoint",
   "masutils.config.mineshaft.esp.toggle": "Toggle mineshaft waypoint",
   "masutils.config.mineshaft.esp.toggle.@Tooltip": "Mineshaft waypoint helps you to faster find a spawned mineshaft",
