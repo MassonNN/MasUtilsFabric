@@ -1,7 +1,7 @@
 {
   "key.masutils.open_config": "Open MasUtils Config",
   "category.masutils": "MasUtils",
-  "masutils.update.success": "Mod updated successfully! New version: %s",
+  "masutils.update.success": "Mod update version %s has been downloaded successfully! It will take effect after game restart ",
   "masutils.update.failed": "Cant download new mod version (%s)",
   "masutils.update.available": "Newer version of mod is available: %s",
   "masutils.update.latest": "Already latest update is installed: %s",

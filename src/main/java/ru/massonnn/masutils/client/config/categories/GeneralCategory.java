@@ -3,11 +3,13 @@ package ru.massonnn.masutils.client.config.categories;
 import net.azureaaron.dandelion.systems.ConfigCategory;
 import net.azureaaron.dandelion.systems.Option;
 import net.azureaaron.dandelion.systems.OptionGroup;
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import ru.massonnn.masutils.Masutils;
 import ru.massonnn.masutils.client.config.MasUtilsConfig;
 import ru.massonnn.masutils.client.features.updater.UpdateAction;
 import ru.massonnn.masutils.client.features.updater.UpdateChannel;
+import ru.massonnn.masutils.client.features.updater.UpdateManager;
 import ru.massonnn.masutils.client.utils.ConfigUtils;
 
 public class GeneralCategory {
@@ -37,7 +39,10 @@ public class GeneralCategory {
                         .description(Text.translatable("masutils.config.general.updateChannel.@Tooltip"))
                         .binding(defaults.general.updateChannel,
                                 () -> config.general.updateChannel,
-                                newValue -> config.general.updateChannel = newValue)
+                                newValue -> {
+                                    config.general.updateChannel = newValue;
+                                    UpdateManager.updateToLatest(newValue, MinecraftClient.getLauncherBrand());
+                                })
                         .controller(ConfigUtils.createEnumController())
                         .build())
                 .optionIf(config.general.checkForUpdates, Option.<UpdateAction>createBuilder()

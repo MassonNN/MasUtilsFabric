@@ -28,8 +28,10 @@ import ru.massonnn.masutils.client.features.mineshaft.MineshaftESP;
 import ru.massonnn.masutils.client.features.mineshaft.MineshaftHinter;
 import ru.massonnn.masutils.client.features.mining.GrottoFinder;
 import ru.massonnn.masutils.client.features.qol.BlockHeadPlacement;
+import ru.massonnn.masutils.client.features.updater.ModVersion;
 import ru.massonnn.masutils.client.features.updater.UpdateChannel;
 import ru.massonnn.masutils.client.features.updater.UpdateManager;
+import ru.massonnn.masutils.client.features.updater.VersionInfo;
 import ru.massonnn.masutils.client.hypixel.Location;
 import ru.massonnn.masutils.client.hypixel.LocationUtils;
 import ru.massonnn.masutils.client.hypixel.MineshaftType;
@@ -148,6 +150,14 @@ public class Masutils implements ClientModInitializer, ModInitializer {
                         });
                     }
                 }
+            }
+
+            if (MasUtilsConfigManager.get().general.updateChannel == UpdateChannel.ALPHA && VERSION.contains("alpha")) {
+                ModMessage.sendAlphaMessage("You are using alpha version of mod! Some features might not work, switch to main channel in config to download latest stable version if needed at the next game start");
+            }
+
+            if (MasUtilsConfigManager.get().general.updateChannel == UpdateChannel.BETA && VERSION.contains("beta")) {
+                ModMessage.sendAlphaMessage("You are using beta version of mod! Some features might not work, switch to main channel in config to download latest stable version if needed at the next game start");
             }
         });
     }
