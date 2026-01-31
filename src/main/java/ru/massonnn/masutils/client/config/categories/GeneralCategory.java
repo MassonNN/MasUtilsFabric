@@ -6,6 +6,8 @@ import net.azureaaron.dandelion.systems.OptionGroup;
 import net.minecraft.text.Text;
 import ru.massonnn.masutils.Masutils;
 import ru.massonnn.masutils.client.config.MasUtilsConfig;
+import ru.massonnn.masutils.client.features.updater.UpdateAction;
+import ru.massonnn.masutils.client.features.updater.UpdateChannel;
 import ru.massonnn.masutils.client.utils.ConfigUtils;
 
 public class GeneralCategory {
@@ -29,6 +31,22 @@ public class GeneralCategory {
                                 () -> config.general.checkForUpdates,
                                 newValue -> config.general.checkForUpdates = newValue)
                         .controller(ConfigUtils.createBooleanController())
+                        .build())
+                .optionIf(config.general.checkForUpdates, Option.<UpdateChannel>createBuilder()
+                        .name(Text.translatable("masutils.config.general.updateChannel"))
+                        .description(Text.translatable("masutils.config.general.updateChannel.@Tooltip"))
+                        .binding(defaults.general.updateChannel,
+                                () -> config.general.updateChannel,
+                                newValue -> config.general.updateChannel = newValue)
+                        .controller(ConfigUtils.createEnumController())
+                        .build())
+                .optionIf(config.general.checkForUpdates, Option.<UpdateAction>createBuilder()
+                        .name(Text.translatable("masutils.config.general.updateAction"))
+                        .description(Text.translatable("masutils.config.general.updateAction.@Tooltip"))
+                        .binding(defaults.general.updateAction,
+                                () -> config.general.updateAction,
+                                newValue -> config.general.updateAction = newValue)
+                        .controller(ConfigUtils.createEnumController())
                         .build())
                 .option(Option.<Boolean>createBuilder()
                         .name(Text.translatable("masutils.config.general.partyCommands"))

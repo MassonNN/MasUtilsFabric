@@ -36,10 +36,12 @@
    - [ ] Vanguard Shaft Party Finder (Across all MasUtils users)
 ### 5. Quality of Life
    - [x] Block head placement for items like abiphone
-### 6. Mining Fiesta
+### 6. Mining
    - [x] Fairy Grotto finder
    - [ ] Refined mineral and Glossy Gemstone alerts and counter
    - [ ] Personal bests and other statistics for fiestas
-### 7. Structure Mining
    - [ ] Relative waypoints system for structures
    - [ ] Profit calculator for waypoint group (based on gemstone veins count and placement)
+### 7. Dungeons
+   - [ ] Party finder filter (AutoKick implementation)
+   - [ ] Hitboxes ESP for starred mobs

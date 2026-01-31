@@ -12,9 +12,11 @@ import net.fabricmc.loader.api.FabricLoader;
 import net.fabricmc.loader.api.ModContainer;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.scoreboard.Scoreboard;
+import net.minecraft.text.Text;
 import net.minecraft.util.Identifier;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import ru.massonnn.masutils.client.config.MasUtilsConfig;
 import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
 import ru.massonnn.masutils.client.events.ChatEvent;
 import ru.massonnn.masutils.client.events.LocationEvents;
@@ -27,6 +29,9 @@ import ru.massonnn.masutils.client.features.mineshaft.MineshaftESP;
 import ru.massonnn.masutils.client.features.mineshaft.MineshaftHinter;
 import ru.massonnn.masutils.client.features.mining.GrottoFinder;
 import ru.massonnn.masutils.client.features.qol.BlockHeadPlacement;
+import ru.massonnn.masutils.client.features.updater.UpdateAction;
+import ru.massonnn.masutils.client.features.updater.UpdateManager;
+import ru.massonnn.masutils.client.features.updater.VersionInfo;
 import ru.massonnn.masutils.client.hypixel.Location;
 import ru.massonnn.masutils.client.hypixel.LocationUtils;
 import ru.massonnn.masutils.client.hypixel.MineshaftType;
@@ -34,11 +39,13 @@ import ru.massonnn.masutils.client.telemetry.ColorAdapter;
 import ru.massonnn.masutils.client.telemetry.TelemetryManager;
 import ru.massonnn.masutils.client.utils.CommandExecutor;
 import ru.massonnn.masutils.client.utils.MasUtilsScheduler;
+import ru.massonnn.masutils.client.utils.ModMessage;
 import ru.massonnn.masutils.client.utils.render.MasutilsRenderPipeline;
 import ru.massonnn.masutils.client.utils.render.RenderHelper;
 import ru.massonnn.masutils.client.waypoints.WaypointManager;
 
 import java.nio.file.Path;
+import java.util.concurrent.CompletableFuture;
 
 public class Masutils implements ClientModInitializer, ModInitializer {
     // Namespace used in Fabric containers
@@ -121,6 +128,23 @@ public class Masutils implements ClientModInitializer, ModInitializer {
             if(!MasUtilsConfigManager.get().dev.telemetry) return;
             TelemetryManager.sendTelemetry();
         });
+
+        if (MasUtilsConfigManager.get().general.checkForUpdates) {
+            switch (MasUtilsConfigManager.get().general.updateAction) {
+                case UpdateAction.DOWNLOAD -> {
+                    UpdateManager.checkAndDownload(MasUtilsConfigManager.get().general.updateChannel);
+                }
+                case UpdateAction.NOTIFY -> {
+                    CompletableFuture<VersionInfo> info = UpdateManager.check(MasUtilsConfigManager.get().general.updateChannel);
+                    info.whenComplete((versionInfo, throwable) -> {
+                        if (versionInfo != null) {
+                            ModMessage.sendModMessage(Text.translatable("masutils.update.available", versionInfo.getVersionName()));
+                        }
+                    });
+                }
+            }
+        }
+
     }
 
     private void processMineshaftEntry() {
