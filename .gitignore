@@ -121,5 +121,3 @@ runs/
 .gradle/
 .settings/
 bin/
-build/
-run/
