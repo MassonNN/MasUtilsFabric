@@ -106,11 +106,17 @@ public class UpdateManager {
                 Path modsFolder = FabricLoader.getInstance().getGameDir().resolve("mods");
                 Path currentPath = Masutils.MOD_CONTAINER.getOrigin().getPaths().getFirst();
 
+                String oldFileName = currentPath.getFileName().toString();
+                String disabledName = oldFileName.replace(".jar", ".delete-it");
+                Path disabledPath = currentPath.resolveSibling(disabledName);
+
                 try {
-                    Files.move(currentPath, currentPath.resolveSibling(currentPath.getFileName().toString() + ".delete-it"), StandardCopyOption.REPLACE_EXISTING);
+                    Files.move(currentPath, disabledPath, StandardCopyOption.REPLACE_EXISTING);
                 } catch (Exception e) {
-                    currentPath.toFile().deleteOnExit();
+                    Masutils.LOGGER.warn("Failed to rename old jar, it might be locked");
                 }
+
+                disabledPath.toFile().deleteOnExit();
 
                 String url = info.getDownloadUrl();
                 String rawFileName = url.substring(url.lastIndexOf('/') + 1);

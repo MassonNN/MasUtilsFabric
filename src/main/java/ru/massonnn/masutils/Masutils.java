@@ -43,6 +43,7 @@ import ru.massonnn.masutils.client.utils.render.MasutilsRenderPipeline;
 import ru.massonnn.masutils.client.utils.render.RenderHelper;
 import ru.massonnn.masutils.client.waypoints.WaypointManager;
 
+import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.Objects;
 
@@ -72,7 +73,6 @@ public class Masutils implements ClientModInitializer, ModInitializer {
         INSTANCE = this;
         ClientTickEvents.END_CLIENT_TICK.register(this::tick);
         init();
-
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
             if (LocationUtils.isOnHypixel()) {
                 return;
@@ -125,10 +125,31 @@ public class Masutils implements ClientModInitializer, ModInitializer {
         });
         MineshaftEvent.ON_SPAWNED_MINESHAFT_EVENT.register(() -> new MineshaftHinter().onSpawnedMineshaft());
 
-        // Telemetry
         ClientLifecycleEvents.CLIENT_STOPPING.register(client -> {
-            if(!MasUtilsConfigManager.get().dev.telemetry) return;
-            TelemetryManager.sendTelemetry();
+            if (MasUtilsConfigManager.get().dev.telemetry) {
+                TelemetryManager.sendTelemetry();
+            }
+
+            try {
+                Path currentPath = Masutils.MOD_CONTAINER.getOrigin().getPaths().getFirst();
+                Path modsFolder = currentPath.getParent();
+
+                if (modsFolder != null && Files.exists(modsFolder)) {
+                    try (var stream = Files.list(modsFolder)) {
+                        stream.filter(path -> path.getFileName().toString().contains(".delete-it"))
+                                .forEach(path -> {
+                                    try {
+                                        Files.deleteIfExists(path);
+                                        Masutils.LOGGER.info("Removed old file on shutdown: " + path.getFileName());
+                                    } catch (Exception e) {
+                                        path.toFile().deleteOnExit();
+                                    }
+                                });
+                    }
+                }
+            } catch (Exception e) {
+                Masutils.LOGGER.error("Failed to clean up .delete-it files during shutdown", e);
+            }
         });
         LocationEvents.JOIN.register(() -> {
             if (MasUtilsConfigManager.get().general.checkForUpdates) {
@@ -170,6 +191,25 @@ public class Masutils implements ClientModInitializer, ModInitializer {
                 ModMessage.sendAlphaMessage("You are using beta version of mod! Some features might not work, switch to main channel in config to download latest stable version if needed at the next game start");
             }
         });
+    }
+
+    private void processOldJarDelete() {
+        Path modsFolder = FabricLoader.getInstance().getGameDir().resolve("mods");
+        if (Files.exists(modsFolder)) {
+            try (var stream = Files.list(modsFolder)) {
+                stream.filter(path -> path.toString().endsWith(".delete-it"))
+                        .forEach(path -> {
+                            try {
+                                Files.deleteIfExists(path);
+                                Masutils.LOGGER.info("Successfully removed old version: " + path.getFileName());
+                            } catch (Exception e) {
+                                Masutils.LOGGER.warn("Failed to remove old version file: " + path.getFileName());
+                            }
+                        });
+            } catch (Exception e) {
+                Masutils.LOGGER.error("Error while cleaning up mods folder", e);
+            }
+        }
     }
 
     private void processMineshaftEntry() {
@@ -229,7 +269,7 @@ public class Masutils implements ClientModInitializer, ModInitializer {
 
     @Override
     public void onInitialize() {
-
+        processOldJarDelete();
     }
 
     public void setCurrentMineshaft(MineshaftType type) {
