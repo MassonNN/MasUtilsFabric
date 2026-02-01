@@ -1,5 +1,11 @@
+<img width="676" height="588" alt="icon" src="https://github.com/user-attachments/assets/6e596ca5-14c5-481e-95ca-99997493e073" />
+
 # MasUtils - A bag of utils for Hypixel Skyblock
-#### made by MassonNn
+
+![Static Badge](https://img.shields.io/badge/made_by-MassonNn-blue) 
+![Static Badge](https://img.shields.io/badge/license-MIT-yellow)
+![Static Badge](https://img.shields.io/badge/minecraft-1.21.10-white)
+
 
 ## Key features
 ### 1. Mineshaft Mining
