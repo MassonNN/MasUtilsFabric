@@ -148,9 +148,9 @@ public class GrottoFinder {
             }
         });
 
-        LocationEvents.ON_LOCATION_CHANGE.register((location) -> {
+        LocationEvents.ON_LOCATION_CHANGE.register((newLocation, prevLocation) -> {
             if (!MasUtilsConfigManager.get().fiestaConfig.grottoFinder) return;
-            if (location == Location.CRYSTAL_HOLLOWS) {
+            if (newLocation == Location.CRYSTAL_HOLLOWS && prevLocation != Location.CRYSTAL_HOLLOWS) {
                 startScanning();
             } else {
                 stopScanning();

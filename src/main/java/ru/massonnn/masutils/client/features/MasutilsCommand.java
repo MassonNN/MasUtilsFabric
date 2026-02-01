@@ -9,12 +9,16 @@ import org.slf4j.LoggerFactory;
 import ru.massonnn.masutils.Masutils;
 import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
 import ru.massonnn.masutils.client.features.updater.UpdateManager;
+import ru.massonnn.masutils.client.telemetry.ActionCollector;
+import ru.massonnn.masutils.client.telemetry.ErrorManager;
 import ru.massonnn.masutils.client.telemetry.TelemetryManager;
 import ru.massonnn.masutils.client.utils.MasUtilsScheduler;
 import ru.massonnn.masutils.client.utils.ModMessage;
 import ru.massonnn.masutils.client.waypoints.Waypoint;
 import ru.massonnn.masutils.client.waypoints.WaypointManager;
 import ru.massonnn.masutils.client.waypoints.WaypointType;
+
+import java.util.HashMap;
 
 import static net.fabricmc.fabric.api.client.command.v2.ClientCommandManager.literal;
 
@@ -29,6 +33,8 @@ public class MasutilsCommand {
 //                            .then(literal(""))
                             .then(literal("config").executes(context -> openConfig()))
                             .then(literal("telemetry").executes(context -> sendTelemetry()))
+                            .then(literal("error").executes(context -> sendError()))
+                            .then(literal("actions").executes(context -> sendActions()))
                             .then(literal("versions").executes(context -> listVersions()))
                             .then(literal("waypoint").executes(context -> createWaypoint()))
             );
@@ -43,6 +49,23 @@ public class MasutilsCommand {
     private static int sendTelemetry() {
         Masutils.LOGGER.info("Request to send telemetry");
         TelemetryManager.sendTelemetry();
+        return 1;
+    }
+
+    private static int sendError() {
+        HashMap<Object, Object> map = new HashMap<>();
+        map.put("testkey", 123);
+        map.put("testkey2", "12345");
+        map.put("config", MasUtilsConfigManager.get());
+        ErrorManager.sendError(
+                "Test",
+                map
+        );
+        return 1;
+    }
+
+    private static int sendActions() {
+        Masutils.LOGGER.info("Request to send actions: " + ActionCollector.prepareJson());
         return 1;
     }
 

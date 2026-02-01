@@ -1,5 +1,6 @@
 package ru.massonnn.masutils.client.features.mineshaft;
 
+import com.mojang.brigadier.Command;
 import net.minecraft.text.Text;
 import ru.massonnn.masutils.Masutils;
 import ru.massonnn.masutils.client.config.MasUtilsConfig;
@@ -16,6 +17,9 @@ public class MineshaftHinter implements MineshaftEvent.OnEnterMineshaft, Minesha
         if (config.mineshaft.mineshaftFeaturesToggle && config.mineshaft.mineshaftProfitHint) {
             this.sendMineshaftHint(type);
             if (config.mineshaft.mineshaftParty.mineshaftPartyMode) {
+                if (config.mineshaft.mineshaftParty.autoWarpToMineshaft) {
+                    CommandExecutor.executeCommand("p warp");
+                }
                 CommandExecutor.sendPartyMessage(Text.translatable("masutils.mineshaft.party.entered", type.getStringPath()).getString());
             }
         }

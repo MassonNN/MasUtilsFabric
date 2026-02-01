@@ -10,10 +10,7 @@ import net.minecraft.client.gui.screen.Screen;
 import net.minecraft.text.Text;
 import org.jetbrains.annotations.Nullable;
 import ru.massonnn.masutils.Masutils;
-import ru.massonnn.masutils.client.config.categories.FiestaCategory;
-import ru.massonnn.masutils.client.config.categories.GeneralCategory;
-import ru.massonnn.masutils.client.config.categories.MineshaftCategory;
-import ru.massonnn.masutils.client.config.categories.QolCategory;
+import ru.massonnn.masutils.client.config.categories.*;
 
 import java.nio.file.Path;
 import java.util.function.UnaryOperator;
@@ -48,11 +45,13 @@ public class MasUtilsConfigManager {
             ConfigCategory mineshaft = MineshaftCategory.create(defaults, config);
             ConfigCategory qol = QolCategory.create(defaults, config);
             ConfigCategory fiesta = FiestaCategory.create(defaults, config);
+            ConfigCategory dev = DevCategory.create(defaults, config);
             return builder.title(Text.translatable("masutils.config.title", Masutils.VERSION))
                     .category(general)
                     .category(mineshaft)
                     .category(qol)
                     .category(fiesta)
+                    .category(dev)
                     .search(search);
         }).generateScreen(parent, ConfigType.MOUL_CONFIG);
     }

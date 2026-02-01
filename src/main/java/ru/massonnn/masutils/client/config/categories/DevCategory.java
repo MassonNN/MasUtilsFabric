@@ -20,7 +20,29 @@ public class DevCategory {
                                 .binding(
                                         defaults.dev.debug,
                                         () -> config.dev.debug,
-                                        newValue -> config.qol.blockHeadPlacement = newValue)
+                                        newValue -> config.dev.debug = newValue)
+                                .controller(ConfigUtils.createBooleanController())
+                                .build()
+                )
+                .option(
+                        Option.<Boolean>createBuilder()
+                                .name(Text.translatable("masutils.config.dev.telemetry"))
+                                .description(Text.translatable("masutils.config.dev.telemetry.@Tooltip"))
+                                .binding(
+                                        defaults.dev.telemetry,
+                                        () -> config.dev.telemetry,
+                                        newValue -> config.dev.telemetry = newValue)
+                                .controller(ConfigUtils.createBooleanController())
+                                .build()
+                )
+                .option(
+                        Option.<Boolean>createBuilder()
+                                .name(Text.translatable("masutils.config.dev.collectErrors"))
+                                .description(Text.translatable("masutils.config.dev.collectErrors.@Tooltip"))
+                                .binding(
+                                        defaults.dev.collectErrors,
+                                        () -> config.dev.collectErrors,
+                                        newValue -> config.dev.collectErrors = newValue)
                                 .controller(ConfigUtils.createBooleanController())
                                 .build()
                 )

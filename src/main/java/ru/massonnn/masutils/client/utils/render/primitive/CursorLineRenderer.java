@@ -25,7 +25,7 @@ public final class CursorLineRenderer implements PrimitiveRenderer<CursorLineRen
         float targetY = (float) (state.y - cameraState.pos.y);
         float targetZ = (float) (state.z - cameraState.pos.z);
 
-        Vector3f lookVec = new Vector3f(0, 0, -0.1f); // Направление "вперед" в OpenGL
+        Vector3f lookVec = new Vector3f(0, 0, -0.1f);
         lookVec.rotate(cameraState.orientation);
 
         float startX = lookVec.x;

@@ -24,6 +24,14 @@ public class PartyEvent {
         }
     });
 
+    public static final Event<PartyCommand> RECEIVE_COMMAND = EventFactory.createArrayBacked(
+            PartyCommand.class,
+            listeners -> (message, issuer) -> {
+                for (PartyCommand listener : listeners) {
+                    listener.onCommand(message, issuer);
+                }
+            });
+
     @FunctionalInterface
     public interface ChatTextEvent {
         void onMessage(Text message);
@@ -32,5 +40,10 @@ public class PartyEvent {
     @FunctionalInterface
     public interface ChatStringEvent {
         void onMessage(String message);
+    }
+
+    @FunctionalInterface
+    public interface PartyCommand {
+        void onCommand(String command, String issuer);
     }
 }

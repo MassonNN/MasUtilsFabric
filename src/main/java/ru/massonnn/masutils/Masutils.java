@@ -28,13 +28,12 @@ import ru.massonnn.masutils.client.features.mineshaft.MineshaftESP;
 import ru.massonnn.masutils.client.features.mineshaft.MineshaftHinter;
 import ru.massonnn.masutils.client.features.mining.GrottoFinder;
 import ru.massonnn.masutils.client.features.qol.BlockHeadPlacement;
-import ru.massonnn.masutils.client.features.updater.ModVersion;
 import ru.massonnn.masutils.client.features.updater.UpdateChannel;
 import ru.massonnn.masutils.client.features.updater.UpdateManager;
-import ru.massonnn.masutils.client.features.updater.VersionInfo;
 import ru.massonnn.masutils.client.hypixel.Location;
 import ru.massonnn.masutils.client.hypixel.LocationUtils;
 import ru.massonnn.masutils.client.hypixel.MineshaftType;
+import ru.massonnn.masutils.client.telemetry.ActionCollector;
 import ru.massonnn.masutils.client.telemetry.ColorAdapter;
 import ru.massonnn.masutils.client.telemetry.TelemetryManager;
 import ru.massonnn.masutils.client.utils.CommandExecutor;
@@ -45,6 +44,7 @@ import ru.massonnn.masutils.client.utils.render.RenderHelper;
 import ru.massonnn.masutils.client.waypoints.WaypointManager;
 
 import java.nio.file.Path;
+import java.util.Objects;
 
 public class Masutils implements ClientModInitializer, ModInitializer {
     public static final String NAMESPACE = "masutils";
@@ -74,12 +74,16 @@ public class Masutils implements ClientModInitializer, ModInitializer {
         init();
 
         ClientPlayConnectionEvents.JOIN.register((handler, sender, client) -> {
+            if (LocationUtils.isOnHypixel()) {
+                return;
+            }
             String brand = handler.getBrand();
             LocationUtils.setOnHypixel(brand != null && brand.toLowerCase().contains("hypixel"));
             WaypointManager.clearWaypoints();
         });
 
         ClientPlayConnectionEvents.DISCONNECT.register((handler, client) -> {
+            if (Objects.requireNonNull(handler.getBrand()).contains("hypixel")) return;
             LocationUtils.setOnHypixel(false);
             LocationUtils.setOnSkyblock(false);
             WaypointManager.clearWaypoints();
@@ -103,8 +107,8 @@ public class Masutils implements ClientModInitializer, ModInitializer {
             }
         });
 
-        LocationEvents.ON_LOCATION_CHANGE.register(location -> {
-            if (location == Location.GLACITE_MINESHAFT) {
+        LocationEvents.ON_LOCATION_CHANGE.register((newLocation, prevLocation) -> {
+            if (newLocation == Location.GLACITE_MINESHAFT && prevLocation != Location.GLACITE_MINESHAFT) {
                 processMineshaftEntry();
             } else {
                 if (this.curMineshaft != MineshaftType.UNDEF) {
@@ -182,7 +186,6 @@ public class Masutils implements ClientModInitializer, ModInitializer {
             if (client.world != null) {
                 LocationUtils.detectLocationFromScoreboard(client.world.getScoreboard());
 
-                // Active polling for mineshaft type if we are in one but type is unknown
                 if (LocationUtils.getLocation() == Location.GLACITE_MINESHAFT
                         && this.curMineshaft == MineshaftType.UNDEF) {
                     processMineshaftEntry();
@@ -215,6 +218,7 @@ public class Masutils implements ClientModInitializer, ModInitializer {
         RenderHelper.init();
         GrottoFinder.initialize();
         CommandExecutor.init();
+        ActionCollector.init();
     }
 
     @Override

@@ -23,9 +23,9 @@ public class LocationEvents {
             });
 
     public static final Event<OnLocationChange> ON_LOCATION_CHANGE = EventFactory
-            .createArrayBacked(OnLocationChange.class, callbacks -> location -> {
+            .createArrayBacked(OnLocationChange.class, callbacks -> (newLocation, prevLocation) -> {
                 for (OnLocationChange callback : callbacks) {
-                    callback.onLocationChange(location);
+                    callback.onLocationChange(newLocation, prevLocation);
                 }
             });
 
@@ -44,6 +44,6 @@ public class LocationEvents {
     @Environment(EnvType.CLIENT)
     @FunctionalInterface
     public interface OnLocationChange {
-        void onLocationChange(Location location);
+        void onLocationChange(Location newLocation, Location prevLocation);
     }
 }

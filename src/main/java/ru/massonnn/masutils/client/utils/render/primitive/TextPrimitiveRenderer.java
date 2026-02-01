@@ -54,7 +54,7 @@ public final class TextPrimitiveRenderer implements PrimitiveRenderer<TextRender
         float width = state.glyphs.getScreenRect().width();
         float height = state.glyphs.getScreenRect().height();
 
-        float yOffsetCorrection = - height * 0.05f; // Сдвиг вниз, если фон "задрался" выше текста
+        float yOffsetCorrection = - height * 0.05f;
 
         float paddingX = 0.4f;
         float paddingY = 0.4f;

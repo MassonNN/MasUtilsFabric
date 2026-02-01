@@ -42,11 +42,6 @@ import net.minecraft.client.texture.TextureSetup;
 import net.minecraft.client.util.BufferAllocator;
 import ru.massonnn.masutils.Masutils;
 
-/**
- * This class automatically handles batching, buffering, and drawing of objects within the world.
- *
- * <p>Mostly modeled off {@link net.minecraft.client.gui.render.GuiRenderer}.
- */
 public class Renderer {
     private static final MinecraftClient CLIENT = MinecraftClient.getInstance();
     private static final List<RenderPipeline> EXCLUDED_FROM_BATCHING = new ArrayList<>();
@@ -77,9 +72,6 @@ public class Renderer {
         return getBuffer(pipeline, Objects.requireNonNull(textureSetup, "textureSetup must not be null"), DEFAULT_LINE_WIDTH, translucent);
     }
 
-    /**
-     * Returns the appropriate {@code BufferBuilder} that should be used with the given pipeline, texture view, and line width.
-     */
     private static BufferBuilder getBuffer(RenderPipeline pipeline, TextureSetup textureSetup, float lineWidth, boolean translucent) {
         if (!EXCLUDED_FROM_BATCHING.contains(pipeline)) {
             return setupBatched(pipeline, textureSetup, lineWidth, translucent);
@@ -114,12 +106,7 @@ public class Renderer {
         return bufferBuilder;
     }
 
-    /**
-     * Calculates the hash of the given inputs which serves as the keys to our maps where we store stuff for the batched draws.
-     * This is much faster than using an object-based key as we do not need to create any objects to find the instances we want.
-     */
     private static int hash(RenderPipeline pipeline, TextureSetup textureSetup, float lineWidth, boolean translucent) {
-        //This manually calculates the hash, avoiding Objects#hash to not incur the array allocation each time
         int hash = 1;
         hash = 31 * hash + pipeline.hashCode();
         hash = 31 * hash + textureSetup.hashCode();
@@ -129,10 +116,6 @@ public class Renderer {
         return hash;
     }
 
-    /**
-     * Allows for excluding the {@code pipeline} from the batching system. This may be needed when working with triangle fans
-     * or contiguous triangle strips.
-     */
     protected static void excludePipelineFromBatching(RenderPipeline pipeline) {
         EXCLUDED_FROM_BATCHING.add(pipeline);
     }
@@ -153,23 +136,18 @@ public class Renderer {
     }
 
     protected static void executeDraws() {
-        //End all of the batches and prepare the draws
         endBatches();
 
-        //Setup the draws
         setupDraws();
 
-        //Execute the draws
         for (Draw draw : DRAWS) {
             draw(draw);
         }
 
-        //Rotate the buffers - ensures that we're likely to be using buffers that the GPU isn't (prevents synchronization/stalls)
         for (MappableRingBuffer buffer : VERTEX_BUFFERS.values()) {
             buffer.rotate();
         }
 
-        //Clear the draws from this frame
         BATCHED_DRAWS.clear();
         PREPARED_DRAWS.clear();
         DRAWS.clear();
@@ -189,9 +167,7 @@ public class Renderer {
             int vertexBufferPosition = vertexBufferPositions.getInt(format);
             int remainingVertexBytes = vertexData.remaining();
 
-            //Copy vertex data into the shared vertex buffer
             copyDataInto(vertices, vertexData, vertexBufferPosition, remainingVertexBytes);
-            //Update vertex buffer position
             vertexBufferPositions.put(format, vertexBufferPosition + remainingVertexBytes);
 
             DRAWS.add(new Draw(
@@ -207,9 +183,6 @@ public class Renderer {
         }
     }
 
-    /**
-     * Maps the {@code target} buffer and copies the {@code source} data into it.
-     */
     private static void copyDataInto(MappableRingBuffer target, ByteBuffer source, int position, int remainingBytes) {
         CommandEncoder commandEncoder = RenderSystem.getDevice().createCommandEncoder();
 
@@ -218,9 +191,6 @@ public class Renderer {
         }
     }
 
-    /**
-     * Resizes/allocates the necessary vertex buffers.
-     */
     private static void setupVertexBuffers() {
         Object2IntMap<VertexFormat> vertexBufferSizes = collectVertexBufferSizes();
 
@@ -245,12 +215,7 @@ public class Renderer {
         return buffer;
     }
 
-    /**
-     * Collect the required buffer size for each vertex format in use.
-     */
     private static Object2IntMap<VertexFormat> collectVertexBufferSizes() {
-        //If we ever need to create our own shared index buffers then we can turn this into an Object2LongMap and pack
-        //both the vertex & index buffer sizes into a single long (since they're two ints)
         Object2IntMap<VertexFormat> vertexSizes = new Object2IntOpenHashMap<>();
 
         for (PreparedDraw prepared : PREPARED_DRAWS) {
@@ -268,12 +233,10 @@ public class Renderer {
         IndexType indexType;
 
         if (draw.pipeline().getVertexFormatMode() == DrawMode.QUADS) {
-            //The quads we're rendering are translucent so they need to be sorted for our index buffer
             draw.builtBuffer().sortQuads(GENERAL_ALLOCATOR, RenderSystem.getProjectionType().getVertexSorter());
             indices = draw.pipeline().getVertexFormat().uploadImmediateIndexBuffer(draw.builtBuffer().getSortedBuffer());
             indexType = draw.builtBuffer().getDrawParameters().indexType();
         } else {
-            //Use general shape index buffer for other draw modes
             ShapeIndexBuffer shapeIndexBuffer = RenderSystem.getSequentialBuffer(draw.pipeline().getVertexFormatMode());
             indices = shapeIndexBuffer.getIndexBuffer(draw.indexCount());
             indexType = shapeIndexBuffer.getIndexType();
@@ -283,7 +246,6 @@ public class Renderer {
     }
 
     private static void draw(Draw draw, GpuBuffer indices, IndexType indexType) {
-        // applyViewOffsetZLayering(); // уже закомментировано — оставь так
 
         GpuBufferSlice dynamicTransforms = setupDynamicTransforms(draw.lineWidth, draw.translucent);
 
@@ -293,7 +255,6 @@ public class Renderer {
                         () -> "masutils world rendering",
                         getMainColorTexture(),
                         OptionalInt.empty(),
-//                        getMainDepthTexture(),
                         null,
                         OptionalDouble.empty()
                 )) {
@@ -318,7 +279,6 @@ public class Renderer {
 
         BuiltBuffer built = draw.builtBuffer;
         draw.builtBuffer().close();
-        // unapplyViewOffsetZLayering(); // закомментировано
     }
 
     private static GpuBufferSlice setupDynamicTransforms(float lineWidth, boolean translucent) {

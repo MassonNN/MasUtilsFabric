@@ -4,6 +4,7 @@ import net.minecraft.client.MinecraftClient;
 import ru.massonnn.masutils.client.config.MasUtilsConfig;
 import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
 import ru.massonnn.masutils.client.events.ChatEvent;
+import ru.massonnn.masutils.client.events.PartyEvent;
 import ru.massonnn.masutils.client.hypixel.MineshaftType;
 import ru.massonnn.masutils.client.utils.CommandExecutor;
 import ru.massonnn.masutils.client.utils.ModMessage;
@@ -43,6 +44,7 @@ public class PartyCommandHandler implements ChatEvent.ChatStringEvent {
         String[] args = parts.length > 1 ? java.util.Arrays.copyOfRange(parts, 1, parts.length) : new String[0];
 
         String playerName = partyMessage.playerName;
+        PartyEvent.RECEIVE_COMMAND.invoker().onCommand(command, playerName);
 
         switch (cmd) {
             case "!w":

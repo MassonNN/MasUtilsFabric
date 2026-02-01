@@ -113,15 +113,12 @@ public class LocationUtils {
             String title = MineshaftType.stripColorCodes(sidebar.getDisplayName().getString());
             setOnSkyblock(title.contains("SKYBLOCK"));
         } else {
-            setOnSkyblock(false);
             return;
         }
 
         if (isOnSkyblock()) {
-            // Priority 1: TAB
             detectLocationFromTab();
 
-            // Priority 2: Sidebar
             List<String> lines = MineshaftType.fetchSidebarLines(scb);
             boolean areaDetected = false;
             for (String line : lines) {
@@ -133,8 +130,6 @@ public class LocationUtils {
                 }
             }
 
-            // Priority 3: Mineshaft Type Fallback (If Area line is missing or not yet
-            // loaded properly)
             if (!areaDetected && location != Location.GLACITE_MINESHAFT) {
                 for (String line : lines) {
                     if (MineshaftType.extractMineshaftTypeFromLine(line) != MineshaftType.UNDEF) {
@@ -188,8 +183,8 @@ public class LocationUtils {
 
     public static void setLocation(@NotNull Location newLocation) {
         if (location != newLocation) {
+            LocationEvents.ON_LOCATION_CHANGE.invoker().onLocationChange(newLocation, location);
             location = newLocation;
-            LocationEvents.ON_LOCATION_CHANGE.invoker().onLocationChange(location);
         }
     }
 

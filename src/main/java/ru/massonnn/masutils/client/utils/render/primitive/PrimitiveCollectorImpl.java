@@ -40,7 +40,6 @@ public final class PrimitiveCollectorImpl implements PrimitiveCollector {
     private void submitFilledBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float[] colourComponents, float alpha, boolean throughWalls) {
         ensureNotFrozen();
 
-        // Ensure the box is in view
         if (!FrustumUtils.isVisible(minX, minY, minZ, maxX, maxY, maxZ)) {
             return;
         }
@@ -71,7 +70,6 @@ public final class PrimitiveCollectorImpl implements PrimitiveCollector {
     private void submitOutlinedBox(double minX, double minY, double minZ, double maxX, double maxY, double maxZ, float[] colourComponents, float alpha, float lineWidth, boolean throughWalls) {
         ensureNotFrozen();
 
-        // Ensure the box is in view
         if (!FrustumUtils.isVisible(minX, minY, minZ, maxX, maxY, maxZ)) {
             return;
         }
