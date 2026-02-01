@@ -60,11 +60,6 @@
   "masutils.config.qol": "Quality of Life",
   "masutils.config.qol.blockHeadPlacement": "Block minecraft head placement",
   "masutils.config.qol.blockHeadPlacement.@Tooltip": "When use items like Abiphone block minecraft head placement for better visual experience",
-  "masutils.config.fiesta": "Mining Fiesta",
-  "masutils.config.fiesta.grottoFinder": "Fairy Grotto finder",
-  "masutils.config.fiesta.grottoFinder.@Tooltip": "Scans world and shows you waypoints for fairy grottos",
-  "masutils.config.fiesta.grottoFinder.start": "Started scanning for grotto",
-  "masutils.config.fiesta.grottoFinder.stop": "Stopped scanning for grotto",
   "masutils.mineshaft.hint": "You have entered mineshaft of type: %s",
   "masutils.mineshaft.types.TOPA1": "TOPAZ (without Crystal)",
   "masutils.mineshaft.types.TOPA2": "TOPAZ (with Crystal)",
@@ -93,5 +88,12 @@
   "masutils.mineshaft.types.CITR1": "CITRINE (without Crystal)",
   "masutils.mineshaft.types.UNDEF": "Undefined (Cant identify this mineshaft type)",
   "masutils.mineshaft.foundCorpse": "Found corpse of type %s!",
-  "masutils.mining.grottoFinder.found": "Found %s at chunk (%d, %d) - Panes: %d, Blocks: %d (%d chunks)"
+
+  "masutils.mining.grottoFinder.found": "Found %s at chunk (%d, %d) - Panes: %d, Blocks: %d (%d chunks)",
+  "masutils.mining.grottoFinder.renderHint": "Hint: Reduce your render distance to 10 (server limit) for scanning speed up",
+  "masutils.config.fiesta": "Mining Fiesta",
+  "masutils.config.fiesta.grottoFinder": "Fairy Grotto finder",
+  "masutils.config.fiesta.grottoFinder.@Tooltip": "Scans world and shows you waypoints for fairy grottos",
+  "masutils.mining.grottoFinder.start": "Started scanning for grotto",
+  "masutils.mining.grottoFinder.stop": "Stopped scanning for grotto"
 }

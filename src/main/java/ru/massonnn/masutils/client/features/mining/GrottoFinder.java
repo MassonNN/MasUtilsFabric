@@ -3,6 +3,7 @@ package ru.massonnn.masutils.client.features.mining;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientChunkEvents;
 import net.fabricmc.fabric.api.client.event.lifecycle.v1.ClientTickEvents;
 import net.minecraft.block.Block;
+import net.minecraft.block.BlockState;
 import net.minecraft.block.Blocks;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
@@ -11,6 +12,8 @@ import net.minecraft.util.math.Box;
 import net.minecraft.util.math.ChunkPos;
 import net.minecraft.world.World;
 import net.minecraft.world.chunk.Chunk;
+import net.minecraft.world.chunk.ChunkSection;
+import net.minecraft.world.chunk.ChunkStatus;
 import ru.massonnn.masutils.Masutils;
 import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
 import ru.massonnn.masutils.client.events.LocationEvents;
@@ -20,10 +23,8 @@ import ru.massonnn.masutils.client.utils.ModMessage;
 import ru.massonnn.masutils.client.utils.render.primitive.PrimitiveCollector;
 
 import java.awt.*;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.awt.List;
+import java.util.*;
 
 public class GrottoFinder {
     private static World lastWorld = null;
@@ -31,14 +32,14 @@ public class GrottoFinder {
     public static final Set<Block> MAGENTA_GLASS_PANES = new HashSet<>();
 
     private static boolean isScanning = false;
-    private static final Map<ChunkPos, StructureData> detectedStructures = new HashMap<>();
-    private static final Set<ChunkPos> scannedChunks = new HashSet<>();
     private static World currentWorld = null;
+    private static final Map<ChunkPos, StructureData> detectedStructures = new HashMap<>();
+    private static final Map<ChunkPos, StructureData> rawChunkData = new HashMap<>();
+    private static final Map<ChunkPos, StructureData> mergedStructures = new HashMap<>();
+    private static final Set<ChunkPos> scannedChunks = new HashSet<>();
 
     // Performance configuration
-    private static final int MAX_BLOCKS_PER_CHUNK = 200; // Maximum magenta blocks to find before stopping
-    private static final int SCAN_HEIGHT_ABOVE_SURFACE = 5; // How many blocks above surface to scan
-    private static final int SCAN_HEIGHT_BELOW_SURFACE = 70; // How many blocks below surface to scan (underground focus)
+    private static final int MAX_BLOCKS_PER_CHUNK = 1000; // Maximum magenta blocks to find before stopping
     private static final int MIN_UNDERGROUND_Y = 10; // Minimum Y level to scan (avoid bedrock)
 
     public static final Map<String, StructureType> STRUCTURE_TYPES = new HashMap<>();
@@ -114,30 +115,46 @@ public class GrottoFinder {
     }
 
     public static void startScanning() {
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client.world == null || client.player == null) return;
+
         isScanning = true;
         lastScanX = Integer.MIN_VALUE;
         lastScanZ = Integer.MIN_VALUE;
-        ModMessage.sendModMessage(Text.translatable("masutils.config.fiesta.grottoFinder.start"));
+        ModMessage.sendModMessage(Text.translatable("masutils.mining.grottoFinder.start"));
         scanAllLoadedChunks();
+
+        if (client.options.getViewDistance().getValue() > 10) {
+            ModMessage.sendModMessage(Text.translatable("masutils.mining.grottoFinder.renderHint"));
+        }
     }
 
     private static int lastScanX = Integer.MIN_VALUE;
     private static int lastScanZ = Integer.MIN_VALUE;
     private static final int MAX_CHUNKS_PER_TICK = 5;
 
+    private static int tickCounter;
+
     public static void initialize() {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
             if (!MasUtilsConfigManager.get().fiestaConfig.grottoFinder) return;
-            World currentWorld = client.world;
-            if (currentWorld != null && currentWorld != lastWorld) {
-                GrottoFinder.onWorldChanged(currentWorld);
-                notifiedStructures.clear();
-                lastWorld = currentWorld;
+            World world = client.world;
+            if (world == null) return;
+
+            if (world != lastWorld) {
+                onWorldChanged(world);
+                lastWorld = world;
             }
 
-            if (GrottoFinder.isScanning() && currentWorld != null) {
-                GrottoFinder.scanAllLoadedChunks();
+            if (isScanning) {
+                scanAllLoadedChunks();
+
+                if (++tickCounter >= 20) {
+                    mergeAndClassify();
+                    checkAndNotifyStructures(world);
+                    tickCounter = 0;
+                }
             }
         });
 
@@ -150,11 +167,16 @@ public class GrottoFinder {
 
         LocationEvents.ON_LOCATION_CHANGE.register((newLocation, prevLocation) -> {
             if (!MasUtilsConfigManager.get().fiestaConfig.grottoFinder) return;
-            if (newLocation == Location.CRYSTAL_HOLLOWS && prevLocation != Location.CRYSTAL_HOLLOWS) {
+
+            boolean isNowInGrotto = (newLocation == Location.CRYSTAL_HOLLOWS);
+            boolean wasInGrotto = (prevLocation == Location.CRYSTAL_HOLLOWS);
+
+            if (isNowInGrotto && !wasInGrotto) {
                 startScanning();
-            } else {
+            }
+            else if (!isNowInGrotto && wasInGrotto) {
                 stopScanning();
-                detectedStructures.clear();
+                mergedStructures.clear();
                 notifiedStructures.clear();
             }
         });
@@ -223,43 +245,42 @@ public class GrottoFinder {
     private static final java.util.Set<net.minecraft.util.math.ChunkPos> notifiedStructures = new java.util.HashSet<>();
 
     private static void checkAndNotifyStructures(World world) {
-        java.util.Set<net.minecraft.util.math.ChunkPos> processedStructureKeys = new java.util.HashSet<>();
+        if (mergedStructures.isEmpty()) return;
 
-        for (java.util.Map.Entry<net.minecraft.util.math.ChunkPos, GrottoFinder.StructureData> entry : GrottoFinder.getDetectedStructures().entrySet()) {
-            GrottoFinder.StructureData structureData = entry.getValue();
+        java.util.Set<StructureData> processedObjects = java.util.Collections.newSetFromMap(new java.util.IdentityHashMap<>());
 
-            if (structureData == null || structureData.isNotified()) {
+        for (StructureData structureData : mergedStructures.values()) {
+            if (structureData == null || structureData.isNotified() || !processedObjects.add(structureData)) {
                 continue;
             }
 
-            if (processedStructureKeys.contains(structureData.chunkPos)) {
+            if ("Pending".equals(structureData.structureType) || "Incomplete".equals(structureData.structureType)) {
                 continue;
             }
 
-            processedStructureKeys.add(structureData.chunkPos);
+            java.util.Set<ChunkPos> structureChunks = new java.util.HashSet<>();
+            for (BlockPos blockPos : structureData.foundBlocks) {
+                structureChunks.add(new ChunkPos(blockPos));
+            }
 
-            boolean allChunksScanned = true;
-            java.util.Set<net.minecraft.util.math.ChunkPos> structureChunks = new java.util.HashSet<>();
-
-            if (structureData.foundBlocks != null && !structureData.foundBlocks.isEmpty()) {
-                for (net.minecraft.util.math.BlockPos blockPos : structureData.foundBlocks) {
-                    structureChunks.add(new net.minecraft.util.math.ChunkPos(blockPos));
-                }
-
-                for (net.minecraft.util.math.ChunkPos structChunkPos : structureChunks) {
-                    if (!world.isChunkLoaded(structChunkPos.x, structChunkPos.z)) {
-                        allChunksScanned = false;
-                        break;
-                    }
+            boolean allChunksLoaded = true;
+            for (ChunkPos cp : structureChunks) {
+                if (!world.isChunkLoaded(cp.x, cp.z)) {
+                    allChunksLoaded = false;
+                    break;
                 }
             }
 
-            if (allChunksScanned && !structureChunks.isEmpty() && !notifiedStructures.contains(structureData.chunkPos) && !"Incomplete".equals(structureData.structureType)) {
-                GrottoFinder.markStructureAsNotified(structureData.chunkPos);
+            if (allChunksLoaded && !structureChunks.isEmpty() && !notifiedStructures.contains(structureData.chunkPos)) {
+
+                markStructureAsNotified(structureData.chunkPos);
                 notifiedStructures.add(structureData.chunkPos);
 
                 MinecraftClient client = MinecraftClient.getInstance();
                 if (client != null && client.player != null) {
+                    if (structureData.chunkPos.x == 32 && structureData.chunkPos.z == 34) {
+                        return;
+                    }
                     Text message = Text.translatable("masutils.mining.grottoFinder.found",
                             structureData.structureType,
                             structureData.chunkPos.x, structureData.chunkPos.z,
@@ -270,88 +291,45 @@ public class GrottoFinder {
             }
         }
     }
+
     public static void scanAllLoadedChunks() {
-        net.minecraft.client.MinecraftClient client = net.minecraft.client.MinecraftClient.getInstance();
-        if (client == null || client.world == null || !isScanning) {
-            return;
+        MinecraftClient client = MinecraftClient.getInstance();
+        if (client == null || client.world == null || !isScanning) return;
+
+        BlockPos playerPos = client.player.getBlockPos();
+        int pX = playerPos.getX() >> 4;
+        int pZ = playerPos.getZ() >> 4;
+        int radius = client.options.getViewDistance().getValue();
+
+        java.util.List<ChunkPos> spiral = new java.util.ArrayList<>();
+        for (int x = -radius; x <= radius; x++) {
+            for (int z = -radius; z <= radius; z++) {
+                spiral.add(new ChunkPos(pX + x, pZ + z));
+            }
         }
 
-        World world = client.world;
+        spiral.sort(java.util.Comparator.comparingDouble(pos ->
+                Math.pow(pos.x - pX, 2) + Math.pow(pos.z - pZ, 2)));
+
         int chunksScannedThisTick = 0;
+        var chunkManager = client.world.getChunkManager();
 
-        if (client.player != null) {
-            net.minecraft.util.math.ChunkPos playerChunk = new net.minecraft.util.math.ChunkPos(client.player.getBlockPos());
-            int viewDistance = client.options.getViewDistance().getValue();
+        for (ChunkPos pos : spiral) {
+            if (chunksScannedThisTick >= MAX_CHUNKS_PER_TICK) break;
+            if (scannedChunks.contains(pos)) continue;
 
-            int loadedChunksCount = 0;
-            int unscannedLoadedChunks = 0;
-
-            for (int x = -viewDistance; x <= viewDistance; x++) {
-                for (int z = -viewDistance; z <= viewDistance; z++) {
-                    int chunkX = playerChunk.x + x;
-                    int chunkZ = playerChunk.z + z;
-                    ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
-
-                    if (world.isChunkLoaded(chunkX, chunkZ)) {
-                        loadedChunksCount++;
-                        if (!scannedChunks.contains(chunkPos)) {
-                            unscannedLoadedChunks++;
-                        }
-                    }
-                }
-            }
-
-            if (unscannedLoadedChunks == 0 && loadedChunksCount > 0) {
-                stopScanning();
-                lastScanX = Integer.MIN_VALUE;
-                lastScanZ = Integer.MIN_VALUE;
-                return;
-            }
-
-            int startX = lastScanX == Integer.MIN_VALUE ? -viewDistance : lastScanX;
-            int startZ = lastScanZ == Integer.MIN_VALUE ? -viewDistance : lastScanZ + 1;
-
-            if (startZ > viewDistance) {
-                startZ = -viewDistance;
-                startX++;
-            }
-
-            if (startX > viewDistance) {
-                startX = -viewDistance;
-                startZ = -viewDistance;
-            }
-
-            for (int x = startX; x <= viewDistance && chunksScannedThisTick < MAX_CHUNKS_PER_TICK; x++) {
-                int zStart = (x == startX) ? startZ : -viewDistance;
-                for (int z = zStart; z <= viewDistance && chunksScannedThisTick < MAX_CHUNKS_PER_TICK; z++) {
-                    int chunkX = playerChunk.x + x;
-                    int chunkZ = playerChunk.z + z;
-                    ChunkPos chunkPos = new ChunkPos(chunkX, chunkZ);
-
-                    if (scannedChunks.contains(chunkPos)) {
-                        continue;
-                    }
-
-                    if (world.isChunkLoaded(chunkX, chunkZ)) {
-                        try {
-                            Chunk chunk = world.getChunk(chunkX, chunkZ);
-                            if (chunk != null) {
-                                scanChunk(chunk, world);
-                                chunksScannedThisTick++;
-                                lastScanX = x;
-                                lastScanZ = z;
-                            }
-                        } catch (Exception e) {
-                            Masutils.LOGGER.info("Exception in scanning all chunks: " + e.getMessage());
-                        }
-                    }
+            if (chunkManager.isChunkLoaded(pos.x, pos.z)) {
+                Chunk chunk = chunkManager.getChunk(pos.x, pos.z, ChunkStatus.FULL, false);
+                if (chunk != null) {
+                    scanChunk(chunk, client.world);
+                    chunksScannedThisTick++;
                 }
             }
         }
     }
 
     public static void stopScanning() {
-        if (isScanning) ModMessage.sendModMessage(Text.translatable("masutils.config.fiesta.grottoFinder.stop"));
+        if (isScanning) ModMessage.sendModMessage(Text.translatable("masutils.mining.grottoFinder.stop"));
         isScanning = false;
     }
 
@@ -366,22 +344,21 @@ public class GrottoFinder {
 //                System.out.println("[GrottoFinder] Structure at " + entry.getKey() + ": type=" + data.structureType + ", blocks=" + (data.foundBlocks != null ? data.foundBlocks.size() : 0));
 //            }
 //        }
-        return detectedStructures;
+        return mergedStructures;
     }
 
     public static void clearDetectedStructures() {
-        detectedStructures.clear();
+        mergedStructures.clear();
         scannedChunks.clear();
     }
 
     public static void onWorldChanged(World newWorld) {
         if (currentWorld != newWorld) {
             currentWorld = newWorld;
-            if (newWorld == null) {
-                detectedStructures.clear();
-                scannedChunks.clear();
-                notifiedStructures.clear();
-            }
+            rawChunkData.clear();
+            mergedStructures.clear();
+            scannedChunks.clear();
+            notifiedStructures.clear();
         }
     }
 
@@ -398,137 +375,26 @@ public class GrottoFinder {
         return block == Blocks.MAGENTA_STAINED_GLASS_PANE;
     }
 
-    // Configuration getters
-    public static int getMaxBlocksPerChunk() {
-        return MAX_BLOCKS_PER_CHUNK;
-    }
-
-    public static int getScanHeightAboveSurface() {
-        return SCAN_HEIGHT_ABOVE_SURFACE;
-    }
-
-    public static int getScanHeightBelowSurface() {
-        return SCAN_HEIGHT_BELOW_SURFACE;
-    }
-
-    public static int getMinUndergroundY() {
-        return MIN_UNDERGROUND_Y;
-    }
-
     public static void scanChunk(Chunk chunk, World world) {
-        if (!isScanning || world == null || chunk == null) {
-            return;
-        }
-
+        if (!isScanning || world == null || chunk == null) return;
         ChunkPos chunkPos = chunk.getPos();
+        if (scannedChunks.contains(chunkPos)) return;
 
-        StructureData existingStructure = detectedStructures.get(chunkPos);
-        boolean isIncompleteStructure = existingStructure != null && "Incomplete".equals(existingStructure.structureType);
-
-        if (scannedChunks.contains(chunkPos) && !isIncompleteStructure) {
-            return;
-        }
-
-        if (isIncompleteStructure) {
-            scannedChunks.remove(chunkPos);
-        }
-
-
-        ChunkScanResult currentResult = scanSingleChunk(chunk, world);
+        ChunkScanResult currentResult = scanSingleChunk(chunk, world, false);
+        if (currentResult == null) return;
 
         scannedChunks.add(chunkPos);
 
-
-        if (currentResult.paneCount > 0 || currentResult.blockCount > 0) {
-
-            ChunkScanResult totalResult = scanNeighboringChunks(chunkPos, world, currentResult);
-
-            java.util.Set<ChunkPos> structureChunks = new java.util.HashSet<>();
-            for (BlockPos blockPos : totalResult.foundBlocks) {
-                structureChunks.add(new ChunkPos(blockPos));
-            }
-
-            boolean allChunksLoaded = true;
-            for (ChunkPos structChunkPos : structureChunks) {
-                if (!world.isChunkLoaded(structChunkPos.x, structChunkPos.z)) {
-                    allChunksLoaded = false;
-                    break;
-                }
-            }
-
-            if (!allChunksLoaded) {
-                BlockPos centerPos = calculateStructureCenter(totalResult.foundBlocks);
-                StructureData incompleteStructure = new StructureData(chunkPos, totalResult.paneCount, totalResult.blockCount, "Incomplete", centerPos, totalResult.foundBlocks, false);
-                for (ChunkPos structChunkPos : structureChunks) {
-                    detectedStructures.put(structChunkPos, incompleteStructure);
-                }
-                return;
-            }
-
-            String structureType = classifyStructure(totalResult.paneCount, totalResult.blockCount);
-
-            if (structureType == null || "Other".equals(structureType)) {
-                BlockPos centerPos = calculateStructureCenter(totalResult.foundBlocks);
-                StructureData incompleteStructure = new StructureData(chunkPos, totalResult.paneCount, totalResult.blockCount, "Incomplete", centerPos, totalResult.foundBlocks, false);
-                for (ChunkPos structChunkPos : structureChunks) {
-                    detectedStructures.put(structChunkPos, incompleteStructure);
-                }
-                return;
-            }
-
-
-            BlockPos centerPos = calculateStructureCenter(totalResult.foundBlocks);
-
-            StructureData existingCompleteStructure = null;
-            for (ChunkPos structChunkPos : structureChunks) {
-                StructureData existing = detectedStructures.get(structChunkPos);
-                if (existing != null && !"Incomplete".equals(existing.structureType)) {
-                    existingCompleteStructure = existing;
-                    break;
-                }
-            }
-
-            if (existingCompleteStructure != null) {
-                if (totalResult.paneCount + totalResult.blockCount > existingCompleteStructure.paneCount + existingCompleteStructure.blockCount) {
-                    StructureData updatedStructure = new StructureData(chunkPos, totalResult.paneCount, totalResult.blockCount, structureType, centerPos, totalResult.foundBlocks, existingCompleteStructure.isNotified());
-                    for (ChunkPos structChunkPos : structureChunks) {
-                        detectedStructures.put(structChunkPos, updatedStructure);
-                    }
-                }
-            } else {
-                StructureData structureData = new StructureData(chunkPos, totalResult.paneCount, totalResult.blockCount, structureType, centerPos, totalResult.foundBlocks, false);
-                for (ChunkPos structChunkPos : structureChunks) {
-                    detectedStructures.put(structChunkPos, structureData);
-                }
-            }
-        }
-    }
-
-    public static void scanChunkManually(Chunk chunk, World world) {
-        if (world == null || chunk == null) {
-            return;
-        }
-
-        ChunkPos chunkPos = chunk.getPos();
-
-        scannedChunks.remove(chunkPos);
-
-        ChunkScanResult currentResult = scanSingleChunk(chunk, world);
-
-        scannedChunks.add(chunkPos);
-
-
-        if (currentResult.paneCount > 0 || currentResult.blockCount > 0) {
-
-            ChunkScanResult totalResult = scanNeighboringChunks(chunkPos, world, currentResult);
-
-            String structureType = classifyStructure(totalResult.paneCount, totalResult.blockCount);
-
-            if (structureType != null) {
-                BlockPos centerPos = new BlockPos(chunkPos.getStartX() + 8, 64, chunkPos.getStartZ() + 8);
-                StructureData structureData = new StructureData(chunkPos, totalResult.paneCount, totalResult.blockCount, structureType, centerPos, totalResult.foundBlocks);
-                detectedStructures.put(chunkPos, structureData);
-            }
+        if (!currentResult.foundBlocks.isEmpty()) {
+            StructureData rawData = new StructureData(
+                    chunkPos,
+                    currentResult.paneCount,
+                    currentResult.blockCount,
+                    "Pending",
+                    calculateStructureCenter(currentResult.foundBlocks),
+                    new java.util.ArrayList<>(currentResult.foundBlocks)
+            );
+            rawChunkData.put(chunkPos, rawData);
         }
     }
 
@@ -559,63 +425,51 @@ public class GrottoFinder {
     }
 
     private static ChunkScanResult scanSingleChunk(Chunk chunk, World world, boolean forceRescan) {
-        net.minecraft.client.MinecraftClient client = net.minecraft.client.MinecraftClient.getInstance();
-        if (client == null || client.world == null) {
-            return new ChunkScanResult();
-        }
+        if (chunk == null || world == null) return null;
 
-        World clientWorld = client.world;
-        ChunkPos chunkPos = chunk.getPos();
         ChunkScanResult result = new ChunkScanResult();
-        int paneCount = 0;
-        int blockCount = 0;
-        int magentaBlocksFound = 0;
+        ChunkSection[] sections = chunk.getSectionArray();
+        boolean chunkHasAnyData = false;
+        int foundCount = 0;
 
-        int minY = Math.max(MIN_UNDERGROUND_Y, clientWorld.getBottomY());
-        int chunkCenterX = chunkPos.getStartX() + 8;
-        int chunkCenterZ = chunkPos.getStartZ() + 8;
-        int surfaceY = clientWorld.getTopY(net.minecraft.world.Heightmap.Type.WORLD_SURFACE, chunkCenterX, chunkCenterZ);
-        int maxY = Math.max(surfaceY + 64, 320);
+        chunkScan:
+        for (int sectionIdx = 0; sectionIdx < sections.length; sectionIdx++) {
+            ChunkSection section = sections[sectionIdx];
+            if (section == null || section.isEmpty()) continue;
 
-        int chunkStartX = chunkPos.getStartX();
-        int chunkStartZ = chunkPos.getStartZ();
+            chunkHasAnyData = true;
+            int baseY = chunk.sectionIndexToCoord(sectionIdx) << 4;
 
-        try {
-            net.minecraft.world.chunk.ChunkSection[] sections = chunk.getSectionArray();
+            for (int y = 0; y < 16; y++) {
+                int realY = baseY + y;
+                if (realY < MIN_UNDERGROUND_Y) continue;
 
-            for (int x = 0; x < 16; x++) {
-                for (int z = 0; z < 16; z++) {
-                    if (magentaBlocksFound > MAX_BLOCKS_PER_CHUNK) {
-                        break;
-                    }
+                for (int x = 0; x < 16; x++) {
+                    for (int z = 0; z < 16; z++) {
+                        if (foundCount >= MAX_BLOCKS_PER_CHUNK) break chunkScan;
 
-                    for (int y = minY; y <= maxY; y++) {
-                        if (magentaBlocksFound > MAX_BLOCKS_PER_CHUNK) {
-                            break;
-                        }
+                        BlockState state = section.getBlockState(x, y, z);
+                        Block block = state.getBlock();
 
-                        int sectionIndex = chunk.getSectionIndex(y);
-                        if (sectionIndex >= 0 && sectionIndex < sections.length) {
-                            net.minecraft.world.chunk.ChunkSection section = sections[sectionIndex];
-                            if (section != null && !section.isEmpty()) {
-                                BlockPos pos = new BlockPos(chunkStartX + x, y, chunkStartZ + z);
-                                Block block = section.getBlockState(x, y & 15, z).getBlock();
-                                if (isMagentaGlass(block)) {
-                                    blockCount++;
-                                    magentaBlocksFound++;
-                                    result.foundBlocks.add(pos);
-                                }
-                            }
+                        if (isMagentaGlass(block)) {
+                            BlockPos pos = new BlockPos(
+                                    chunk.getPos().getStartX() + x,
+                                    realY,
+                                    chunk.getPos().getStartZ() + z
+                            );
+
+                            if (isMagentaGlassBlock(block)) result.blockCount++;
+                            else result.paneCount++;
+
+                            result.foundBlocks.add(pos);
+                            foundCount++;
                         }
                     }
                 }
             }
-        } catch (Exception e) {
-            Masutils.LOGGER.info("Cannot check chunk due to exception: " + e.getMessage());
         }
 
-        result.paneCount = paneCount;
-        result.blockCount = blockCount;
+        if (!chunkHasAnyData) return null;
         result.scannedChunks = 1;
         return result;
     }
@@ -635,7 +489,7 @@ public class GrottoFinder {
     }
 
     private static void scanNeighboringChunksRecursive(ChunkPos currentChunk, World world, ChunkScanResult totalResult, java.util.Set<ChunkPos> structureChunks, int depth) {
-        if (depth > 3) {
+        if (depth > 6) {
             return;
         }
 
@@ -659,7 +513,7 @@ public class GrottoFinder {
                     if (!scannedChunks.contains(neighborPos)) {
                         scannedChunks.add(neighborPos);
                     }
-
+                    if (neighborResult == null) continue;
                     if (neighborResult.paneCount > 0 || neighborResult.blockCount > 0) {
                         totalResult.add(neighborResult);
                         structureChunks.add(neighborPos);
@@ -735,11 +589,11 @@ public class GrottoFinder {
     }
 
     public static StructureData getStructureAt(ChunkPos chunkPos) {
-        return detectedStructures.get(chunkPos);
+        return mergedStructures.get(chunkPos);
     }
 
     public static StructureData findStructureContainingChunk(ChunkPos chunkPos) {
-        for (StructureData structure : detectedStructures.values()) {
+        for (StructureData structure : mergedStructures.values()) {
             if (structure.foundBlocks != null && !structure.foundBlocks.isEmpty()) {
                 for (BlockPos blockPos : structure.foundBlocks) {
                     ChunkPos blockChunk = new ChunkPos(blockPos);
@@ -749,11 +603,11 @@ public class GrottoFinder {
                 }
             }
         }
-        return detectedStructures.get(chunkPos);
+        return mergedStructures.get(chunkPos);
     }
 
     public static void markStructureAsNotified(ChunkPos chunkPos) {
-        StructureData data = detectedStructures.get(chunkPos);
+        StructureData data = mergedStructures.get(chunkPos);
         if (data != null) {
             StructureData updatedData = data.withNotified(true);
             java.util.Set<ChunkPos> structureChunks = new java.util.HashSet<>();
@@ -765,7 +619,7 @@ public class GrottoFinder {
             structureChunks.add(chunkPos);
 
             for (ChunkPos structChunkPos : structureChunks) {
-                detectedStructures.put(structChunkPos, updatedData);
+                mergedStructures.put(structChunkPos, updatedData);
             }
         }
     }
@@ -788,10 +642,112 @@ public class GrottoFinder {
 
     public static void extractRendering(PrimitiveCollector collector) {
         if (!MasUtilsConfigManager.get().fiestaConfig.grottoFinder) return;
-        detectedStructures.forEach(((chunkPos, structureData) -> {
-            for (BlockPos blockPos : structureData.foundBlocks) {
-                collector.submitOutlinedBox(new Box(blockPos), Color.MAGENTA.getComponents(null), Color.MAGENTA.getAlpha(), 5f, true);
+
+        // Рендерим сырые блоки из чанков (они появляются сразу при сканировании)
+        // Здесь нет дубликатов, так как в rawChunkData один ChunkPos = один набор блоков
+        for (StructureData data : rawChunkData.values()) {
+            if (data == null || data.foundBlocks == null) continue;
+
+            for (BlockPos blockPos : data.foundBlocks) {
+                collector.submitOutlinedBox(
+                        new Box(blockPos),
+                        Color.MAGENTA.getComponents(null),
+                        100f,
+                        2.0f,
+                        true
+                );
             }
-        }));
+        }
+    }
+
+    private static void mergeAndClassify() {
+        if (rawChunkData.isEmpty()) return;
+
+        Set<ChunkPos> processed = new HashSet<>();
+        Map<ChunkPos, StructureData> newMerged = new HashMap<>();
+
+        for (ChunkPos startPos : rawChunkData.keySet()) {
+            if (processed.contains(startPos)) continue;
+
+            Set<ChunkPos> connectedChunks = new HashSet<>();
+            java.util.List<BlockPos> allBlocks = new ArrayList<>();
+
+            // Рекурсия теперь работает ТОЛЬКО по сырым данным
+            collectRawRecursive(startPos, connectedChunks, allBlocks);
+
+            if (connectedChunks.isEmpty()) continue;
+            processed.addAll(connectedChunks);
+
+            int totalPanes = 0, totalBlocks = 0;
+            for (ChunkPos cp : connectedChunks) {
+                StructureData chunkPart = rawChunkData.get(cp);
+                if (chunkPart != null) {
+                    totalPanes += chunkPart.paneCount;
+                    totalBlocks += chunkPart.blockCount;
+                }
+            }
+
+            String type = classifyStructure(totalPanes, totalBlocks);
+            BlockPos center = calculateStructureCenter(allBlocks);
+
+            StructureData finalStructure = new StructureData(
+                    startPos, totalPanes, totalBlocks, type, center, allBlocks, false
+            );
+
+            for (ChunkPos cp : connectedChunks) {
+                newMerged.put(cp, finalStructure);
+            }
+        }
+
+        mergedStructures.clear();
+        mergedStructures.putAll(newMerged);
+    }
+
+    private static void collectRawRecursive(ChunkPos current, Set<ChunkPos> visited, java.util.List<BlockPos> allBlocks) {
+        if (visited.contains(current) || !rawChunkData.containsKey(current)) return;
+
+        visited.add(current);
+        StructureData data = rawChunkData.get(current);
+        if (data != null) allBlocks.addAll(data.foundBlocks);
+
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                if (x == 0 && z == 0) continue;
+                collectRawRecursive(new ChunkPos(current.x + x, current.z + z), visited, allBlocks);
+            }
+        }
+    }
+
+    private static void collectStructureRecursive(ChunkPos current, Set<ChunkPos> visited, java.util.List<BlockPos> allBlocks) {
+        if (visited.contains(current) || !mergedStructures.containsKey(current)) return;
+
+        visited.add(current);
+        StructureData data = mergedStructures.get(current);
+        if (data != null) allBlocks.addAll(data.foundBlocks);
+
+        // Проверяем соседей (8 сторон)
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                if (x == 0 && z == 0) continue;
+                collectStructureRecursive(new ChunkPos(current.x + x, current.z + z), visited, allBlocks);
+            }
+        }
+    }
+
+    private static void findConnectedChunks(ChunkPos current, Set<ChunkPos> visited, java.util.List<BlockPos> allBlocks) {
+        if (visited.contains(current) || !mergedStructures.containsKey(current)) return;
+
+        visited.add(current);
+        StructureData data = mergedStructures.get(current);
+        if (data != null && data.foundBlocks != null) {
+            allBlocks.addAll(data.foundBlocks);
+        }
+
+        for (int x = -1; x <= 1; x++) {
+            for (int z = -1; z <= 1; z++) {
+                if (x == 0 && z == 0) continue;
+                findConnectedChunks(new ChunkPos(current.x + x, current.z + z), visited, allBlocks);
+            }
+        }
     }
 }
