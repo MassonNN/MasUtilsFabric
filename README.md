@@ -1,3 +1,5 @@
+<img width="676" height="588" alt="icon" src="https://github.com/user-attachments/assets/6e596ca5-14c5-481e-95ca-99997493e073" />
+
 # MasUtils - A bag of utils for Hypixel Skyblock
 #### made by MassonNn
 
