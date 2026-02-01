@@ -1,4 +1,4 @@
-<img width="676" height="588" alt="icon" src="https://github.com/user-attachments/assets/6e596ca5-14c5-481e-95ca-99997493e073" />
+<img width="563" height="490" alt="icon" src="https://github.com/user-attachments/assets/6e596ca5-14c5-481e-95ca-99997493e073" />
 
 # MasUtils - A bag of utils for Hypixel Skyblock
 
@@ -12,15 +12,15 @@
    - [x] Mineshaft party mode (auto-transfer, auto-warp, exclude-warp)
    - [x] Mineshaft corpse finder
    - [x] Mineshaft waypoint
-   - [ ] Mineshaft stats (per session / total) [IN DEV]
+   - [ ] Mineshaft stats (per session / total)
    - [x] Mineshaft type recognition
    - [ ] Mineshaft profit calculator (including crystals forging price)
-   - [ ] Corpse loot tracking (session / total) [IN DEV]
-   - [ ] Glacite powder speed-o-meter (powder/hr) [IN PLANS]
+   - [ ] Corpse loot tracking (session / total)
+   - [ ] Glacite powder speed-o-meter (powder/hr)
 ### 2. Nucleus Runs
-   - [ ] Nucleus run stats (avg time, personal best, detailed per crystal) [IN PLANS]
-   - [ ] Nucleus run profit meter [IN PLANS]
-   - [ ] Bal boss stats (avg time, personal best) [IN PLANS]
+   - [ ] Nucleus run stats (avg time, personal best, detailed per crystal)
+   - [ ] Nucleus run profit meter
+   - [ ] Bal boss stats (avg time, personal best)
 ### 3. Party commands
    - [x] !warp to request warp
    - [x] !pt(me) to transfer party leadership
@@ -35,7 +35,7 @@
    - [x] !inv {name} to invite player with given name
    - [x] !allinv to enable all-invite
    - [x] !keys to send amount of keys (Tungsten/Amber/Vanguard)
-### 4. Vanguard [IN PLANS]
+### 4. Vanguard
    - [ ] Vanguard corpses stats (per session / total)
    - [ ] Vanguard loot tracker
    - [ ] Vanguard total ranking
@@ -44,10 +44,14 @@
    - [x] Block head placement for items like abiphone
 ### 6. Mining
    - [x] Fairy Grotto finder
+   - [ ] Golden Drag Lair finder
+   - [ ] Xalx and other lost visitors finder
    - [ ] Refined mineral and Glossy Gemstone alerts and counter
    - [ ] Personal bests and other statistics for fiestas
    - [ ] Relative waypoints system for structures
    - [ ] Profit calculator for waypoint group (based on gemstone veins count and placement)
+   - 
 ### 7. Dungeons
    - [ ] Party finder filter (AutoKick implementation)
    - [ ] Hitboxes ESP for starred mobs
+   - [ ] 

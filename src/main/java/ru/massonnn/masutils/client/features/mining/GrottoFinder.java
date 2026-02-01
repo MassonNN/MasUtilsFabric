@@ -338,12 +338,6 @@ public class GrottoFinder {
     }
 
     public static Map<ChunkPos, StructureData> getDetectedStructures() {
-//        for (Map.Entry<ChunkPos, StructureData> entry : detectedStructures.entrySet()) {
-//            StructureData data = entry.getValue();
-//            if (data != null) {
-//                System.out.println("[GrottoFinder] Structure at " + entry.getKey() + ": type=" + data.structureType + ", blocks=" + (data.foundBlocks != null ? data.foundBlocks.size() : 0));
-//            }
-//        }
         return mergedStructures;
     }
 
