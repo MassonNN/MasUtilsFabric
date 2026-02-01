@@ -3,6 +3,7 @@ package ru.massonnn.masutils.client.config.categories;
 import net.azureaaron.dandelion.systems.ConfigCategory;
 import net.azureaaron.dandelion.systems.Option;
 import net.azureaaron.dandelion.systems.OptionGroup;
+import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.text.Text;
 import ru.massonnn.masutils.Masutils;
@@ -41,7 +42,9 @@ public class GeneralCategory {
                                 () -> config.general.updateChannel,
                                 newValue -> {
                                     config.general.updateChannel = newValue;
-                                    UpdateManager.updateToLatest(newValue, MinecraftClient.getLauncherBrand());
+                                    if (config.general.updateAction == UpdateAction.DOWNLOAD) {
+                                        UpdateManager.updateToLatest(newValue, FabricLoader.getInstance().getRawGameVersion());
+                                    }
                                 })
                         .controller(ConfigUtils.createEnumController())
                         .build())

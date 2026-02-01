@@ -134,6 +134,12 @@ public class Masutils implements ClientModInitializer, ModInitializer {
             if (MasUtilsConfigManager.get().general.checkForUpdates) {
                 UpdateChannel channel = MasUtilsConfigManager.get().general.updateChannel;
 
+                if (channel == UpdateChannel.MAIN) {
+                    if (Masutils.VERSION.contains("alpha") || Masutils.VERSION.contains("beta")) {
+                        UpdateManager.updateToLatest(UpdateChannel.MAIN, FabricLoader.getInstance().getRawGameVersion());
+                    }
+                }
+
                 switch (MasUtilsConfigManager.get().general.updateAction) {
                     case DOWNLOAD -> {
                         UpdateManager.checkAndDownload(channel);

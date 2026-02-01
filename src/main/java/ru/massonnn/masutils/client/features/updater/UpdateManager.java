@@ -29,6 +29,7 @@ public class UpdateManager {
             .build();
 
     public static void updateToLatest(UpdateChannel channel, String mcVersion) {
+        Masutils.LOGGER.info("Requested to download another channel latest " + channel.name() + " " + mcVersion);
         fetchReleases().thenAccept(releases -> {
             VersionInfo latest = findBestVersion(releases, channel, mcVersion, null);
             if (latest != null) {
@@ -59,13 +60,16 @@ public class UpdateManager {
                 });
     }
 
-    private static VersionInfo findBestVersion(JsonArray releases, UpdateChannel channel, String mcVersion, ModVersion currentLimit) {
+    private static VersionInfo findBestVersion(JsonArray releases, UpdateChannel userChannel, String mcVersion, ModVersion currentLimit) {
+        VersionInfo bestMatch = null;
+        ModVersion bestVersion = null;
+
         for (int i = 0; i < releases.size(); i++) {
             JsonObject release = releases.get(i).getAsJsonObject();
             String tag = release.get("tag_name").getAsString();
             ModVersion found = new ModVersion(tag);
 
-            if (found.getChannel().ordinal() < channel.ordinal()) continue;
+            if (found.getChannel().ordinal() < userChannel.ordinal()) continue;
 
             if (currentLimit != null && found.compareTo(currentLimit) <= 0) continue;
 
@@ -74,20 +78,26 @@ public class UpdateManager {
                 JsonObject asset = assets.get(j).getAsJsonObject();
                 String fileName = asset.get("name").getAsString();
 
-                if (fileName.endsWith(".jar") &&
-                        !fileName.contains("-sources") &&
-                        !fileName.contains("-dev") &&
-                        fileName.contains("+" + mcVersion)) {
-
-                    return new VersionInfo(
-                            tag,
-                            asset.get("browser_download_url").getAsString(),
-                            release.has("body") ? release.get("body").getAsString() : ""
-                    );
+                if (isValidJar(fileName, mcVersion)) {
+                    if (bestVersion == null || found.compareTo(bestVersion) > 0) {
+                        bestVersion = found;
+                        bestMatch = new VersionInfo(
+                                tag,
+                                asset.get("browser_download_url").getAsString(),
+                                release.has("body") ? release.get("body").getAsString() : ""
+                        );
+                    }
                 }
             }
         }
-        return null;
+        return bestMatch;
+    }
+
+    private static boolean isValidJar(String fileName, String mcVersion) {
+        return fileName.endsWith(".jar") &&
+                !fileName.contains("-sources") &&
+                !fileName.contains("-dev") &&
+                fileName.contains("+" + mcVersion);
     }
 
     public static CompletableFuture<Path> download(VersionInfo info, Consumer<Boolean> callback) {
