@@ -52,7 +52,6 @@
    - [ ] Personal bests and other statistics for fiestas
    - [ ] Relative waypoints system for structures
    - [ ] Profit calculator for waypoint group (based on gemstone veins count and placement)
-   - 
 ### 7. Dungeons
    - [ ] Party finder filter (AutoKick implementation)
    - [x] Hitboxes ESP for starred mobs
