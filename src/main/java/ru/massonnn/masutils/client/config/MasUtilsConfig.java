@@ -8,4 +8,5 @@ public class MasUtilsConfig {
     public final NucleusRunsConfig nucleusRuns = new NucleusRunsConfig();
     public final QoLConfig qol = new QoLConfig();
     public final FiestaConfig fiestaConfig = new FiestaConfig();
+    public final DungeonsConfig dungeonsConfig = new DungeonsConfig();
 }

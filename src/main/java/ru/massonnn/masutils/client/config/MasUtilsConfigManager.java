@@ -46,11 +46,13 @@ public class MasUtilsConfigManager {
             ConfigCategory qol = QolCategory.create(defaults, config);
             ConfigCategory fiesta = FiestaCategory.create(defaults, config);
             ConfigCategory dev = DevCategory.create(defaults, config);
+            ConfigCategory dungeons = DungeonsCategory.create(defaults, config);
             return builder.title(Text.translatable("masutils.config.title", Masutils.VERSION))
                     .category(general)
                     .category(mineshaft)
                     .category(qol)
                     .category(fiesta)
+                    .category(dungeons)
                     .category(dev)
                     .search(search);
         }).generateScreen(parent, ConfigType.MOUL_CONFIG);

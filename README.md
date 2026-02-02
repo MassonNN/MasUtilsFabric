@@ -53,5 +53,4 @@
    - 
 ### 7. Dungeons
    - [ ] Party finder filter (AutoKick implementation)
-   - [ ] Hitboxes ESP for starred mobs
-   - [ ] 
+   - [x] Hitboxes ESP for starred mobs

@@ -68,7 +68,7 @@ public class LocationUtils {
     }
 
     private static boolean processLocationMatch(String text) {
-        if (text.contains("hub"))
+        if (text.contains("hub") && !text.contains("dungeon"))
             setLocation(Location.HUB);
         else if (text.contains("private island"))
             setLocation(Location.PRIVATE_ISLAND);
@@ -94,7 +94,7 @@ public class LocationUtils {
             setLocation(Location.GOLD_MINE);
         else if (text.contains("dungeon hub"))
             setLocation(Location.DUNGEON_HUB);
-        else if (text.contains("dungeon"))
+        else if (text.contains("dungeon") || text.contains("catacomb"))
             setLocation(Location.DUNGEON);
         else if (text.contains("kuudra"))
             setLocation(Location.KUUDRAS_HOLLOW);
