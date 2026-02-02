@@ -21,6 +21,7 @@
    - [ ] Nucleus run stats (avg time, personal best, detailed per crystal)
    - [ ] Nucleus run profit meter
    - [ ] Bal boss stats (avg time, personal best)
+   - [ ] Jungle Temple cheese helper
 ### 3. Party commands
    - [x] !warp to request warp
    - [x] !pt(me) to transfer party leadership
@@ -40,6 +41,7 @@
    - [ ] Vanguard loot tracker
    - [ ] Vanguard total ranking
    - [ ] Vanguard Shaft Party Finder (Across all MasUtils users)
+   - [ ] Vanguard finder across mod users
 ### 5. Quality of Life
    - [x] Block head placement for items like abiphone
 ### 6. Mining
