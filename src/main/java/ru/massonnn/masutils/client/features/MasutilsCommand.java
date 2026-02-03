@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 import ru.massonnn.masutils.Masutils;
 import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
 import ru.massonnn.masutils.client.features.updater.UpdateManager;
+import ru.massonnn.masutils.client.hypixel.HypixelManager;
 import ru.massonnn.masutils.client.telemetry.ActionCollector;
 import ru.massonnn.masutils.client.telemetry.ErrorManager;
 import ru.massonnn.masutils.client.telemetry.TelemetryManager;
@@ -35,6 +36,7 @@ public class MasutilsCommand {
                             .then(literal("telemetry").executes(context -> sendTelemetry()))
                             .then(literal("error").executes(context -> sendError()))
                             .then(literal("actions").executes(context -> sendActions()))
+                            .then(literal("api").executes(context -> requestAPI()))
                             .then(literal("versions").executes(context -> listVersions()))
                             .then(literal("waypoint").executes(context -> createWaypoint()))
             );
@@ -66,6 +68,18 @@ public class MasutilsCommand {
 
     private static int sendActions() {
         Masutils.LOGGER.info("Request to send actions: " + ActionCollector.prepareJson());
+        return 1;
+    }
+
+    private static int requestAPI() {
+//        String username = MinecraftClient.getInstance().player.getName().getString();
+        HypixelManager.fetchProfile("pendat").thenAccept(profile -> {
+            if (profile == null) return;
+            Masutils.LOGGER.info("Fetched profile " + profile);
+        }).exceptionally(ex -> {
+            ex.printStackTrace();
+            return null;
+        });
         return 1;
     }
 

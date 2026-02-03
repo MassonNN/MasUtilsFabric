@@ -32,6 +32,14 @@ public class PartyEvent {
                 }
             });
 
+    public static final Event<PartyFinderJoined> PARTY_FINDER_JOINED = EventFactory.createArrayBacked(
+            PartyFinderJoined.class,
+            listeners -> (username, className) -> {
+                for (PartyFinderJoined listener : listeners) {
+                    listener.onPartyFinderJoined(username, className);
+                }
+            });
+
     @FunctionalInterface
     public interface ChatTextEvent {
         void onMessage(Text message);
@@ -45,5 +53,10 @@ public class PartyEvent {
     @FunctionalInterface
     public interface PartyCommand {
         void onCommand(String command, String issuer);
+    }
+
+    @FunctionalInterface
+    public interface PartyFinderJoined {
+        void onPartyFinderJoined(String username, String className);
     }
 }

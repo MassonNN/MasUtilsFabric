@@ -31,5 +31,8 @@
     "fabric-rendering-v1": "*",
     "fabric-language-kotlin": ">=1.11.0",
     "dandelion": ">=1.0.0-alpha.10+1.21.10"
+  },
+  "custom": {
+    "firmament:hide_from_modlist": true
   }
 }

@@ -26,6 +26,28 @@ public class QolCategory {
                                 .controller(ConfigUtils.createBooleanController())
                                 .build()
                 )
+                .option(
+                        Option.<Boolean>createBuilder()
+                                .name(Text.translatable("masutils.config.qol.disableAllParticles"))
+                                .description(Text.translatable("masutils.config.qol.disableAllParticles.@Tooltip"))
+                                .binding(
+                                        defaults.qol.disableAllParticles,
+                                        () -> config.qol.disableAllParticles,
+                                        newValue -> config.qol.disableAllParticles = newValue)
+                                .controller(ConfigUtils.createBooleanController())
+                                .build()
+                )
+                .option(
+                        Option.<Boolean>createBuilder()
+                                .name(Text.translatable("masutils.config.qol.potatoMode"))
+                                .description(Text.translatable("masutils.config.qol.potatoMode.@Tooltip"))
+                                .binding(
+                                        defaults.qol.potatoMode,
+                                        () -> config.qol.potatoMode,
+                                        newValue -> config.qol.potatoMode = newValue)
+                                .controller(ConfigUtils.createBooleanController())
+                                .build()
+                )
                 .build();
     }
 }

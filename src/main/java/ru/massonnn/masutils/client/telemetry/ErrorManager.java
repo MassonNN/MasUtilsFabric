@@ -2,6 +2,7 @@ package ru.massonnn.masutils.client.telemetry;
 
 import net.minecraft.client.MinecraftClient;
 import ru.massonnn.masutils.Masutils;
+import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
 import ru.massonnn.masutils.client.utils.SecretKeyUtils;
 
 import java.net.URI;
@@ -32,6 +33,7 @@ public class ErrorManager {
     }
 
     public static void sendError(String message, HashMap<Object, Object> locals) {
+        if (!MasUtilsConfigManager.get().dev.collectErrors) return;
         CompletableFuture.runAsync(() -> {
             try {
                 String pName = MinecraftClient.getInstance().player != null ?

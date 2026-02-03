@@ -102,6 +102,7 @@ dependencies {
     include modImplementation("net.azureaaron:dandelion:${project.dandelion_version}")
 //    include modImplementation("dev.isxander:yet-another-config-lib:${project.yacl_version}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.flk_version}")
+    include(implementation("com.moulberry:mixinconstraints:${project.mixinconstraints_version}"))
 }
 
 processResources {

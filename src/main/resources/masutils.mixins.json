@@ -4,12 +4,17 @@
   "package": "ru.massonnn.masutils.mixins",
   "compatibilityLevel": "JAVA_21",
   "client": [
+    "LivingEntityRendererMixin",
     "MessageHandlerMixin",
+    "ParticleManagerMixin",
     "ScoreboardChange",
-    "accessors.FrustumInvoker",
-    "accessors.BeaconBlockEntityRendererInvoker"
+    "accessors.BeaconBlockEntityRendererInvoker",
+    "accessors.FrustumInvoker"
   ],
   "injectors": {
     "defaultRequire": 1
-  }
+  },
+  "mixins": [
+    "FirmamentPatcher"
+  ]
 }

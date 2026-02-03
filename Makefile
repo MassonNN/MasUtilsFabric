@@ -15,7 +15,7 @@ release:
 	$(eval FULL_TAG := v$(version)+$(MC_VER))
 
 	git add $(PROPERTIES_FILE)
-	git commit -m "Release $(FULL_TAG)"
+	git commit -a -m "Release $(FULL_TAG)"
 	git tag -a $(FULL_TAG) -m "Version $(FULL_TAG)"
 	
 	git push origin $(FULL_TAG)

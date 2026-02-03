@@ -55,3 +55,5 @@
 ### 7. Dungeons
    - [ ] Party finder filter (AutoKick implementation)
    - [x] Hitboxes ESP for starred mobs
+### 8. Rift
+   - [ ] Solver for 4-in-row challenge

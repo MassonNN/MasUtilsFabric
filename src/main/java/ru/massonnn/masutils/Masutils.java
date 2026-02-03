@@ -23,6 +23,7 @@ import ru.massonnn.masutils.client.events.MineshaftEvent;
 import ru.massonnn.masutils.client.features.MasutilsCommand;
 import ru.massonnn.masutils.client.features.Party;
 import ru.massonnn.masutils.client.features.PartyCommandHandler;
+import ru.massonnn.masutils.client.features.dungeons.AutoKick;
 import ru.massonnn.masutils.client.features.dungeons.StarMobs;
 import ru.massonnn.masutils.client.features.mineshaft.CorpseFinder;
 import ru.massonnn.masutils.client.features.mineshaft.MineshaftESP;
@@ -267,6 +268,7 @@ public class Masutils implements ClientModInitializer, ModInitializer {
         CommandExecutor.init();
         ActionCollector.init();
         StarMobs.init();
+        AutoKick.init();
     }
 
     @Override
