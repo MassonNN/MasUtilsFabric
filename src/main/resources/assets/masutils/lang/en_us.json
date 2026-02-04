@@ -128,10 +128,13 @@
   "masutils.mineshaft.foundCorpse": "Found corpse of type %s!",
 
   "masutils.mining.grottoFinder.found": "Found %s at chunk (%d, %d) - Panes: %d, Blocks: %d (%d chunks)",
+  "masutils.crystalHollowsFinder.foundLostVisitor": "Found lost visitor: %s",
   "masutils.mining.grottoFinder.renderHint": "Hint: Reduce your render distance to 10 (server limit) for scanning speed up",
-  "masutils.config.fiesta": "Mining Fiesta",
-  "masutils.config.fiesta.grottoFinder": "Fairy Grotto finder",
-  "masutils.config.fiesta.grottoFinder.@Tooltip": "Scans world and shows you waypoints for fairy grottos",
+  "masutils.config.crystalHollowsFinder": "Crystal Hollows Finder",
+  "masutils.config.crystalHollowsFinder.grottoFinder": "Fairy Grotto finder",
+  "masutils.config.crystalHollowsFinder.grottoFinder.@Tooltip": "Scans world and shows you waypoints for fairy grottos",
+  "masutils.config.crystalHollowsFinder.lostVisitorsFinder": "Lost visitors finder",
+  "masutils.config.crystalHollowsFinder.lostVisitorsFinder.@Tooltip": "Scan world in crystal hollows for lost visitors: Xalx, Three Bears and Chunk",
   "masutils.mining.grottoFinder.start": "Started scanning for grotto",
   "masutils.mining.grottoFinder.stop": "Stopped scanning for grotto",
 

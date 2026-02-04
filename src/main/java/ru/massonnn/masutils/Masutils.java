@@ -20,6 +20,7 @@ import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
 import ru.massonnn.masutils.client.events.ChatEvent;
 import ru.massonnn.masutils.client.events.LocationEvents;
 import ru.massonnn.masutils.client.events.MineshaftEvent;
+import ru.massonnn.masutils.client.features.LostVisitorFounder;
 import ru.massonnn.masutils.client.features.MasutilsCommand;
 import ru.massonnn.masutils.client.features.Party;
 import ru.massonnn.masutils.client.features.PartyCommandHandler;
@@ -269,6 +270,7 @@ public class Masutils implements ClientModInitializer, ModInitializer {
         ActionCollector.init();
         StarMobs.init();
         AutoKick.init();
+        LostVisitorFounder.init();
     }
 
     @Override

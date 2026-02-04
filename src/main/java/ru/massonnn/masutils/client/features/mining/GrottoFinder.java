@@ -23,7 +23,6 @@ import ru.massonnn.masutils.client.utils.ModMessage;
 import ru.massonnn.masutils.client.utils.render.primitive.PrimitiveCollector;
 
 import java.awt.*;
-import java.awt.List;
 import java.util.*;
 
 public class GrottoFinder {
@@ -138,7 +137,7 @@ public class GrottoFinder {
     public static void initialize() {
 
         ClientTickEvents.END_CLIENT_TICK.register(client -> {
-            if (!MasUtilsConfigManager.get().fiestaConfig.grottoFinder) return;
+            if (!MasUtilsConfigManager.get().crystalHollowsFinder.grottoFinder) return;
             World world = client.world;
             if (world == null) return;
 
@@ -159,14 +158,14 @@ public class GrottoFinder {
         });
 
         ClientChunkEvents.CHUNK_LOAD.register((world, chunk) -> {
-            if (!MasUtilsConfigManager.get().fiestaConfig.grottoFinder) return;
+            if (!MasUtilsConfigManager.get().crystalHollowsFinder.grottoFinder) return;
             if (GrottoFinder.isScanning() && world != null && chunk != null) {
                 scanChunkForStructures(world, chunk);
             }
         });
 
         LocationEvents.ON_LOCATION_CHANGE.register((newLocation, prevLocation) -> {
-            if (!MasUtilsConfigManager.get().fiestaConfig.grottoFinder) return;
+            if (!MasUtilsConfigManager.get().crystalHollowsFinder.grottoFinder) return;
 
             boolean isNowInGrotto = (newLocation == Location.CRYSTAL_HOLLOWS);
             boolean wasInGrotto = (prevLocation == Location.CRYSTAL_HOLLOWS);
@@ -635,7 +634,7 @@ public class GrottoFinder {
     }
 
     public static void extractRendering(PrimitiveCollector collector) {
-        if (!MasUtilsConfigManager.get().fiestaConfig.grottoFinder) return;
+        if (!MasUtilsConfigManager.get().crystalHollowsFinder.grottoFinder) return;
 
         for (StructureData data : rawChunkData.values()) {
             if (data == null || data.foundBlocks == null) continue;
