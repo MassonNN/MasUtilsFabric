@@ -637,8 +637,6 @@ public class GrottoFinder {
     public static void extractRendering(PrimitiveCollector collector) {
         if (!MasUtilsConfigManager.get().fiestaConfig.grottoFinder) return;
 
-        // Рендерим сырые блоки из чанков (они появляются сразу при сканировании)
-        // Здесь нет дубликатов, так как в rawChunkData один ChunkPos = один набор блоков
         for (StructureData data : rawChunkData.values()) {
             if (data == null || data.foundBlocks == null) continue;
 
@@ -666,7 +664,6 @@ public class GrottoFinder {
             Set<ChunkPos> connectedChunks = new HashSet<>();
             java.util.List<BlockPos> allBlocks = new ArrayList<>();
 
-            // Рекурсия теперь работает ТОЛЬКО по сырым данным
             collectRawRecursive(startPos, connectedChunks, allBlocks);
 
             if (connectedChunks.isEmpty()) continue;
@@ -719,7 +716,6 @@ public class GrottoFinder {
         StructureData data = mergedStructures.get(current);
         if (data != null) allBlocks.addAll(data.foundBlocks);
 
-        // Проверяем соседей (8 сторон)
         for (int x = -1; x <= 1; x++) {
             for (int z = -1; z <= 1; z++) {
                 if (x == 0 && z == 0) continue;

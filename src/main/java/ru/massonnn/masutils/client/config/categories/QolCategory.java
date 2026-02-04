@@ -48,6 +48,17 @@ public class QolCategory {
                                 .controller(ConfigUtils.createBooleanController())
                                 .build()
                 )
+                .option(
+                        Option.<Boolean>createBuilder()
+                                .name(Text.translatable("masutils.config.qol.hideDamageIndicator"))
+                                .description(Text.translatable("masutils.config.qol.hideDamageIndicator.@Tooltip"))
+                                .binding(
+                                        defaults.qol.hideDamageIndicator,
+                                        () -> config.qol.hideDamageIndicator,
+                                        newValue -> config.qol.hideDamageIndicator = newValue)
+                                .controller(ConfigUtils.createBooleanController())
+                                .build()
+                )
                 .build();
     }
 }

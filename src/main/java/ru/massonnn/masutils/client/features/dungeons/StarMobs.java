@@ -96,4 +96,15 @@ public class StarMobs {
                 true
         );
     }
+
+    public static boolean isStarMob(String mobName) {
+        if (mobName.contains("Lost Adventurer")) return true;
+        if (mobName.contains("Shadow Assassin")) return true;
+        if (mobName.contains("Angry Archaeologist")) return true;
+        return mobName.contains("✯");
+    }
+
+    public static boolean isNameTag(String text) {
+        return text.contains("❤") || text.contains("/") || (text.contains("[Lvl") && text.contains("]"));
+    }
 }

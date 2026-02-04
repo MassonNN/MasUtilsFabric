@@ -4,9 +4,12 @@
   "package": "ru.massonnn.masutils.mixins",
   "compatibilityLevel": "JAVA_21",
   "client": [
-    "LivingEntityRendererMixin",
+    "DamageIndicatorMixin",
+    "LivingEntityRenderStateMixin",
     "MessageHandlerMixin",
     "ParticleManagerMixin",
+    "PotatoAppearanceMixin",
+    "PotatoFeaturesMixin",
     "ScoreboardChange",
     "accessors.BeaconBlockEntityRendererInvoker",
     "accessors.FrustumInvoker"
