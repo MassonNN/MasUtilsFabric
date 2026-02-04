@@ -44,6 +44,8 @@
    - [ ] Vanguard finder across mod users
 ### 5. Quality of Life
    - [x] Block head placement for items like abiphone
+   - [ ] Potato mode in dungeons (Odin-like)
+   - [ ] Hide damage indicators (in dungeons)
 ### 6. Mining
    - [x] Fairy Grotto finder
    - [ ] Golden Drag Lair finder
