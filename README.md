@@ -7,6 +7,19 @@
 ![Static Badge](https://img.shields.io/badge/minecraft-1.21.10-white)
 
 
+### How to install
+Download desired version in "Releases". Select appropriate minecraft version.
+Move downloaded .jar in your /minecraft/mods folder. Or use mod launcher like Modrinth/CurseForge.
+
+Future updates will be downloaded automatically if you leave "Auto updater" option enabled.
+
+
+### I found a bug / Mod doesn't work
+Open issue in "Issues" page on the github. If you can start up game with mod then you have to enable telemetry and error collector options to help understand your problem. Then describe your problem in issue.
+
+### I want a new feature in this mod
+Open issue in "Issues" page. Describe your feature. If you want to transfer mod feature from 1.8.9 then mention a mod name which have this feature.
+
 ## Key features
 ### 1. Mineshaft Mining
    - [x] Mineshaft party mode (auto-transfer, auto-warp, exclude-warp)
