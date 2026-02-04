@@ -1,5 +1,6 @@
 package ru.massonnn.masutils.mixins;
 
+import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.*;
 import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
@@ -8,8 +9,8 @@ import net.minecraft.client.render.entity.state.ArmorStandEntityRenderState;
 import net.minecraft.client.render.entity.state.LivingEntityRenderState;
 import net.minecraft.client.texture.Sprite;
 import net.minecraft.client.util.math.MatrixStack;
-import net.minecraft.entity.Entity;
 import net.minecraft.util.Identifier;
+import net.minecraft.util.math.Box;
 import org.spongepowered.asm.mixin.Mixin;
 import org.spongepowered.asm.mixin.Unique;
 import org.spongepowered.asm.mixin.injection.At;
@@ -18,6 +19,7 @@ import org.spongepowered.asm.mixin.injection.callback.CallbackInfo;
 import ru.massonnn.masutils.client.config.MasUtilsConfigManager;
 import ru.massonnn.masutils.client.features.dungeons.StarMobs;
 import ru.massonnn.masutils.client.hypixel.LocationUtils;
+import ru.massonnn.masutils.client.utils.StarMobPersistentAccessor;
 import ru.massonnn.masutils.client.utils.StarMobStateAccessor;
 
 import static ru.massonnn.masutils.client.features.dungeons.StarMobs.isNameTag;
@@ -41,37 +43,54 @@ public abstract class PotatoAppearanceMixin {
 
     @Inject(method = "updateRenderState", at = @At("RETURN"))
     private void captureStarStatus(net.minecraft.entity.LivingEntity entity, LivingEntityRenderState state, float f, CallbackInfo ci) {
-        if (MasUtilsConfigManager.get().qol.potatoMode && LocationUtils.isInDungeons()) {
-            if (state instanceof StarMobStateAccessor accessor) {
-                boolean hasAnyNameTag = false;
-                boolean isStar = false;
+        if (!LocationUtils.isInDungeons() || !MasUtilsConfigManager.get().qol.potatoMode) return;
 
-                if (entity.hasCustomName()) {
+        if (state instanceof StarMobStateAccessor stateAccessor && entity instanceof StarMobPersistentAccessor entityAccessor) {
+
+            if (!entityAccessor.masutils$isPotato()) {
+                boolean foundTag = false;
+                boolean foundStar = false;
+
+                if (entity.getCustomName() != null) {
                     String name = entity.getCustomName().getString();
                     if (isNameTag(name)) {
-                        hasAnyNameTag = true;
-                        if (StarMobs.isStarMob(name)) isStar = true;
+                        foundTag = true;
+                        if (StarMobs.isStarMob(name)) foundStar = true;
                     }
                 }
 
-                if (!hasAnyNameTag) {
-                    net.minecraft.util.math.Box box = entity.getBoundingBox().expand(1.0, 4.5, 1.0);
-                    java.util.List<net.minecraft.entity.decoration.ArmorStandEntity> stands =
-                            entity.getEntityWorld().getEntitiesByClass(net.minecraft.entity.decoration.ArmorStandEntity.class, box, Entity::hasCustomName);
+                if (!foundTag) {
+                    net.minecraft.util.math.Box box = entity.getBoundingBox().expand(1.5, 5.0, 1.5);
 
-                    for (net.minecraft.entity.decoration.ArmorStandEntity stand : stands) {
-                        String standName = stand.getCustomName().getString();
-                        if (isNameTag(standName)) {
-                            hasAnyNameTag = true;
-                            if (StarMobs.isStarMob(standName)) isStar = true;
-                            break;
+                    var world = entity.getEntityWorld();
+                    if (world != null) {
+                        java.util.List<net.minecraft.entity.decoration.ArmorStandEntity> stands = world.getEntitiesByClass(
+                                net.minecraft.entity.decoration.ArmorStandEntity.class,
+                                box,
+                                e -> e.getCustomName() != null
+                        );
+
+                        if (stands != null) {
+                            for (net.minecraft.entity.decoration.ArmorStandEntity stand : stands) {
+                                String sName = stand.getCustomName().getString();
+                                if (isNameTag(sName)) {
+                                    foundTag = true;
+                                    if (StarMobs.isStarMob(sName)) foundStar = true;
+                                    break;
+                                }
+                            }
                         }
                     }
                 }
 
-                accessor.setStarMob(isStar);
-                accessor.setHasNameTag(hasAnyNameTag);
+                if (foundTag) {
+                    entityAccessor.masutils$setPotato(true);
+                    entityAccessor.masutils$setStar(foundStar);
+                }
             }
+
+            stateAccessor.setHasNameTag(entityAccessor.masutils$isPotato());
+            stateAccessor.setStarMob(entityAccessor.masutils$isStar());
         }
     }
 
@@ -84,12 +103,12 @@ public abstract class PotatoAppearanceMixin {
                 String text = armorStandState.displayName.getString();
 
                 if (isNameTag(text)) {
-                    net.minecraft.util.math.Box searchUnder = new net.minecraft.util.math.Box(
-                            camera.pos.x + state.x - 0.5, camera.pos.y + state.y - 3.0, camera.pos.z + state.z - 0.5,
-                            camera.pos.x + state.x + 0.5, camera.pos.y + state.y, camera.pos.z + state.z + 0.5
+                    Box searchUnder = new Box(
+                            camera.pos.x + state.x - 1.0, camera.pos.y + state.y - 5.0, camera.pos.z + state.z - 1.0,
+                            camera.pos.x + state.x + 1.0, camera.pos.y + state.y + 0.5, camera.pos.z + state.z + 1.0
                     );
 
-                    var world = net.minecraft.client.MinecraftClient.getInstance().world;
+                    var world = MinecraftClient.getInstance().world;
                     if (world != null) {
                         boolean hasMobBelow = !world.getOtherEntities(null, searchUnder,
                                 e -> e instanceof net.minecraft.entity.LivingEntity &&
