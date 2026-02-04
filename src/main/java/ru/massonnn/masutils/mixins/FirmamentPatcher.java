@@ -1,6 +1,5 @@
 package ru.massonnn.masutils.mixins;
 
-
 import com.llamalad7.mixinextras.injector.wrapmethod.WrapMethod;
 import com.llamalad7.mixinextras.injector.wrapoperation.Operation;
 import com.moulberry.mixinconstraints.annotations.IfModLoaded;
@@ -15,6 +14,6 @@ import ru.massonnn.masutils.Masutils;
 public class FirmamentPatcher {
     @WrapMethod(method = "onServerJoin", require = 0)
     private void onServerJoin(@Coerce Object event, Operation<Void> original) {
-        Masutils.LOGGER.info("Firmament detected, disabling mod announcer.");
+        Masutils.LOGGER.info("Firmament mod announcer intercepted");
     }
 }

@@ -5,6 +5,7 @@
   "compatibilityLevel": "JAVA_21",
   "client": [
     "DamageIndicatorMixin",
+    "HideEffectsMixin",
     "LivingEntityRenderStateMixin",
     "MessageHandlerMixin",
     "ParticleManagerMixin",

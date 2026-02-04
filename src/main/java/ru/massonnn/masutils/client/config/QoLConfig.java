@@ -5,4 +5,5 @@ public class QoLConfig {
     public boolean disableAllParticles = false;
     public boolean potatoMode = false;
     public boolean hideDamageIndicator = false;
+    public boolean hideEffectsOverlay = false;
 }

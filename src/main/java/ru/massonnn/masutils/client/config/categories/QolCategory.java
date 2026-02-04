@@ -59,6 +59,17 @@ public class QolCategory {
                                 .controller(ConfigUtils.createBooleanController())
                                 .build()
                 )
+                .option(
+                        Option.<Boolean>createBuilder()
+                                .name(Text.translatable("masutils.config.qol.hideEffectsOverlay"))
+                                .description(Text.translatable("masutils.config.qol.hideEffectsOverlay.@Tooltip"))
+                                .binding(
+                                        defaults.qol.hideEffectsOverlay,
+                                        () -> config.qol.hideEffectsOverlay,
+                                        newValue -> config.qol.hideEffectsOverlay = newValue)
+                                .controller(ConfigUtils.createBooleanController())
+                                .build()
+                )
                 .build();
     }
 }

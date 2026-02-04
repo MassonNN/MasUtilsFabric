@@ -103,6 +103,7 @@ dependencies {
 //    include modImplementation("dev.isxander:yet-another-config-lib:${project.yacl_version}")
     modImplementation("net.fabricmc:fabric-language-kotlin:${project.flk_version}")
     include(implementation("com.moulberry:mixinconstraints:${project.mixinconstraints_version}"))
+//    compileOnly(files("libs/firmament.jar"))
 }
 
 processResources {

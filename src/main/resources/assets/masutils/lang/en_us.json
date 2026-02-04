@@ -70,7 +70,8 @@
   "masutils.config.qol.potatoMode.@Tooltip": "Texture of all mobs changes to color boxes, remove armor rendering. Removes fake name tags and fake mobs. Increases FPS and add casual visual experience. Works only in dungeons!",
   "masutils.config.qol.hideDamageIndicator": "Hide damage indicator",
   "masutils.config.qol.hideDamageIndicator.@Tooltip": "Hide damage amount indication on mob hit. Works only in dungeons!",
-
+  "masutils.config.qol.hideEffectsOverlay": "Hide effects overlay",
+  "masutils.config.qol.hideEffectsOverlay.@Tooltip": "Hide annoying and useless vanilla effects overlay",
 
   "masutils.config.dungeons": "Dungeons",
   "masutils.config.dungeons.starMobs": "Star mobs highlighting",

@@ -57,18 +57,19 @@ Open issue in "Issues" page. Describe your feature. If you want to transfer mod 
    - [ ] Vanguard finder across mod users
 ### 5. Quality of Life
    - [x] Block head placement for items like abiphone
-   - [ ] Potato mode in dungeons (Odin-like)
-   - [ ] Hide damage indicators (in dungeons)
+   - [x] Potato mode in dungeons (Odin-like)
+   - [x] Hide damage indicators (in dungeons)
+   - [x] Hide effects overlay
 ### 6. Mining
    - [x] Fairy Grotto finder
    - [ ] Golden Drag Lair finder
-   - [ ] Xalx and other lost visitors finder
+   - [x] Xalx and other lost visitors finder
    - [ ] Refined mineral and Glossy Gemstone alerts and counter
    - [ ] Personal bests and other statistics for fiestas
    - [ ] Relative waypoints system for structures
    - [ ] Profit calculator for waypoint group (based on gemstone veins count and placement)
 ### 7. Dungeons
-   - [ ] Party finder filter (AutoKick implementation)
+   - [x] Party finder filter (AutoKick implementation)
    - [x] Hitboxes ESP for starred mobs
 ### 8. Rift
    - [ ] Solver for 4-in-row challenge

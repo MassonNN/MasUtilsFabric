@@ -18,7 +18,7 @@ public class FiestaCategory {
                 .option(
                         Option.<Boolean>createBuilder()
                                 .name(Text.translatable("masutils.config.crystalHollowsFinder.grottoFinder"))
-                                .description(Text.translatable("masutils.config.fiesta.crystalHollowsFinder.@Tooltip"))
+                                .description(Text.translatable("masutils.config.fiesta.crystalHollowsFinder.grottoFinder.@Tooltip"))
                                 .binding(
                                         defaults.crystalHollowsFinder.grottoFinder,
                                         () -> config.crystalHollowsFinder.grottoFinder,
