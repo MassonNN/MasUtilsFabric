@@ -73,3 +73,6 @@ Open issue in "Issues" page. Describe your feature. If you want to transfer mod 
    - [x] Hitboxes ESP for starred mobs
 ### 8. Rift
    - [ ] Solver for 4-in-row challenge
+
+
+Current minecraft version: 1.21.11
