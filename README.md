@@ -4,7 +4,7 @@
 
 ![Static Badge](https://img.shields.io/badge/made_by-MassonNn-blue) 
 ![Static Badge](https://img.shields.io/badge/license-MIT-yellow)
-![Static Badge](https://img.shields.io/badge/minecraft-1.21.10-white)
+![Static Badge](https://img.shields.io/badge/minecraft-1.21.11-white)
 
 
 ### How to install
