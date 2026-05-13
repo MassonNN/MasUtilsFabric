@@ -75,4 +75,4 @@ Open issue in "Issues" page. Describe your feature. If you want to transfer mod 
    - [ ] Solver for 4-in-row challenge
 
 
-Current minecraft version: 1.21.11
+Current minecraft version: 1.21.11 (alpha)
