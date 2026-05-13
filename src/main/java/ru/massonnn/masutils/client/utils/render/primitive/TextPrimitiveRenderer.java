@@ -1,6 +1,8 @@
 package ru.massonnn.masutils.client.utils.render.primitive;
 
 import com.mojang.blaze3d.pipeline.RenderPipeline;
+import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import net.minecraft.client.font.TextDrawable;
 import net.minecraft.client.font.TextRenderer;
 import net.minecraft.client.gl.RenderPipelines;
@@ -37,15 +39,21 @@ public final class TextPrimitiveRenderer implements PrimitiveRenderer<TextRender
 
         state.glyphs.draw(new TextRenderer.GlyphDrawer() {
             @Override
-            public void drawGlyph(TextDrawable glyph) {
-                TextureSetup textureSetup = TextureSetup.withoutGlTexture(glyph.textureView());
+            public void drawGlyph(TextDrawable.DrawnGlyphRect glyph) {
+                TextureSetup textureSetup = TextureSetup.of(
+                        glyph.textureView(),
+                        RenderSystem.getSamplerCache().get(FilterMode.LINEAR));
                 BufferBuilder textBuffer = Renderer.getBuffer(textPipeline, textureSetup);
                 glyph.render(positionMatrix, textBuffer, LightmapTextureManager.MAX_BLOCK_LIGHT_COORDINATE, false);
             }
 
             @Override
-            public void drawRectangle(TextDrawable bakedGlyph) {
-                drawGlyph(bakedGlyph);
+            public void drawRectangle(TextDrawable rect) {
+                TextureSetup textureSetup = TextureSetup.of(
+                        rect.textureView(),
+                        RenderSystem.getSamplerCache().get(FilterMode.LINEAR));
+                BufferBuilder textBuffer = Renderer.getBuffer(textPipeline, textureSetup);
+                rect.render(positionMatrix, textBuffer, LightmapTextureManager.MAX_BLOCK_LIGHT_COORDINATE, false);
             }
         });
     }

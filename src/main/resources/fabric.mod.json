@@ -27,10 +27,10 @@
   "depends": {
     "fabricloader": ">=${loader_version}",
     "fabric": "*",
-    "minecraft": "1.21.10",
+    "minecraft": "1.21.11",
     "fabric-rendering-v1": "*",
     "fabric-language-kotlin": ">=1.11.0",
-    "dandelion": ">=1.0.0-alpha.10+1.21.10"
+    "dandelion": ">=1.0.0-alpha.15+1.21.11"
   },
   "custom": {
     "firmament:hide_from_modlist": true

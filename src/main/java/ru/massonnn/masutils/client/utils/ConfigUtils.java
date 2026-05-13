@@ -1,9 +1,9 @@
 package ru.massonnn.masutils.client.utils;
 
-import net.azureaaron.dandelion.systems.ButtonOption;
-import net.azureaaron.dandelion.systems.controllers.BooleanController;
-import net.azureaaron.dandelion.systems.controllers.ColourController;
-import net.azureaaron.dandelion.systems.controllers.EnumController;
+import net.azureaaron.dandelion.api.ButtonOption;
+import net.azureaaron.dandelion.api.controllers.BooleanController;
+import net.azureaaron.dandelion.api.controllers.ColourController;
+import net.azureaaron.dandelion.api.controllers.EnumController;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.option.KeybindsScreen;
 import net.minecraft.text.Text;

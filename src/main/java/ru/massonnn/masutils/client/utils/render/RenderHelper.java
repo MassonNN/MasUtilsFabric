@@ -1,6 +1,7 @@
 package ru.massonnn.masutils.client.utils.render;
 
 import com.mojang.blaze3d.systems.RenderSystem;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
 
 import net.fabricmc.fabric.api.client.rendering.v1.world.WorldExtractionContext;
@@ -67,13 +68,13 @@ public class RenderHelper {
      * Returns a {@code TextureSetup} with a single texture input only.
      */
     public static TextureSetup singleTexture(GpuTextureView texture) {
-        return TextureSetup.withoutGlTexture(texture);
+        return TextureSetup.of(texture, RenderSystem.getSamplerCache().get(FilterMode.LINEAR));
     }
 
     /**
      * Returns a {@code TextureSetup} with the texture input and a lightmap.
      */
     public static TextureSetup textureWithLightmap(GpuTextureView texture) {
-        return TextureSetup.of(texture);
+        return TextureSetup.withLightmap(texture, RenderSystem.getSamplerCache().get(FilterMode.LINEAR));
     }
 }

@@ -1,9 +1,9 @@
 package ru.massonnn.masutils.client.config;
 
-import net.azureaaron.dandelion.platform.ConfigType;
-import net.azureaaron.dandelion.systems.ConfigCategory;
-import net.azureaaron.dandelion.systems.ConfigManager;
-import net.azureaaron.dandelion.systems.DandelionConfigScreen;
+import net.azureaaron.dandelion.api.ConfigType;
+import net.azureaaron.dandelion.api.ConfigCategory;
+import net.azureaaron.dandelion.api.ConfigManager;
+import net.azureaaron.dandelion.api.DandelionConfigScreen;
 import net.fabricmc.loader.api.FabricLoader;
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.gui.screen.Screen;

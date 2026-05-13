@@ -2,7 +2,7 @@ package ru.massonnn.masutils.mixins;
 
 import net.minecraft.client.MinecraftClient;
 import net.minecraft.client.model.*;
-import net.minecraft.client.render.RenderLayer;
+import net.minecraft.client.render.RenderLayers;
 import net.minecraft.client.render.command.OrderedRenderCommandQueue;
 import net.minecraft.client.render.entity.LivingEntityRenderer;
 import net.minecraft.client.render.entity.state.ArmorStandEntityRenderState;
@@ -143,7 +143,7 @@ public abstract class PotatoAppearanceMixin {
                 queue.submitModelPart(
                         MASUTILS$CUBE_PART,
                         matrices,
-                        RenderLayer.getEntitySolid(texture),
+                        RenderLayers.entitySolid(texture),
                         state.light,
                         LivingEntityRenderer.getOverlay(state, 0.0f),
                         (Sprite) null

@@ -58,6 +58,7 @@ repositories {
             includeGroup "dev.isxander"
             includeGroup "org.quiltmc.parsers"
         }
+    }
 
     maven {
         name = "JitPack"
@@ -87,7 +88,7 @@ repositories {
             includeGroup "org.notenoughupdates.moulconfig"
         }
     }
-}}
+}
 
 dependencies {
     minecraft "com.mojang:minecraft:${project.minecraft_version}"

@@ -20,7 +20,7 @@ public class OcclusionCuller {
     }
 
     private void updateCameraPos() {
-        var camera = CLIENT.gameRenderer.getCamera().getPos();
+        var camera = CLIENT.gameRenderer.getCamera().getCameraPos();
         cameraPos.set(camera.x, camera.y, camera.z);
     }
 

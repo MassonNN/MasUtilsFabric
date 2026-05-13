@@ -8,6 +8,7 @@ import java.util.Objects;
 import java.util.OptionalDouble;
 import java.util.OptionalInt;
 
+import org.joml.Matrix4f;
 import org.joml.Matrix4fStack;
 import org.joml.Vector3f;
 import org.joml.Vector4f;
@@ -20,6 +21,7 @@ import com.mojang.blaze3d.systems.CommandEncoder;
 import com.mojang.blaze3d.systems.RenderPass;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.systems.RenderSystem.ShapeIndexBuffer;
+import com.mojang.blaze3d.textures.FilterMode;
 import com.mojang.blaze3d.textures.GpuTextureView;
 import com.mojang.blaze3d.vertex.VertexFormat;
 import com.mojang.blaze3d.vertex.VertexFormat.DrawMode;
@@ -33,11 +35,11 @@ import it.unimi.dsi.fastutil.objects.Object2IntMaps;
 import it.unimi.dsi.fastutil.objects.Object2IntOpenHashMap;
 import it.unimi.dsi.fastutil.objects.Object2ObjectOpenHashMap;
 import net.minecraft.client.MinecraftClient;
+import net.minecraft.client.gl.GpuSampler;
 import net.minecraft.client.gl.MappableRingBuffer;
 import net.minecraft.client.render.BufferBuilder;
 import net.minecraft.client.render.BuiltBuffer;
 import net.minecraft.client.render.BuiltBuffer.DrawParameters;
-import net.minecraft.client.render.RenderLayer;
 import net.minecraft.client.texture.TextureSetup;
 import net.minecraft.client.util.BufferAllocator;
 import ru.massonnn.masutils.Masutils;
@@ -45,7 +47,8 @@ import ru.massonnn.masutils.Masutils;
 public class Renderer {
     private static final MinecraftClient CLIENT = MinecraftClient.getInstance();
     private static final List<RenderPipeline> EXCLUDED_FROM_BATCHING = new ArrayList<>();
-    private static final BufferAllocator GENERAL_ALLOCATOR = new BufferAllocator(RenderLayer.CUTOUT_BUFFER_SIZE);
+    private static final int BUFFER_ALLOCATOR_CAPACITY = 786432;
+    private static final BufferAllocator GENERAL_ALLOCATOR = new BufferAllocator(BUFFER_ALLOCATOR_CAPACITY);
     private static final float DEFAULT_LINE_WIDTH = 0f;
     private static final Vector4f COLOR_MODULATOR = new Vector4f(1f, 1f, 1f, 1f);
     private static final Vector4f COLOR_MODULATOR_TRANSLUCENT = new Vector4f(1f, 1f, 1f, 0.5f);
@@ -85,7 +88,7 @@ public class Renderer {
         BatchedDraw draw = BATCHED_DRAWS.get(hash);
 
         if (draw == null) {
-            BufferAllocator allocator = ALLOCATORS.computeIfAbsent(hash, _hash -> new BufferAllocator(RenderLayer.CUTOUT_BUFFER_SIZE));
+            BufferAllocator allocator = ALLOCATORS.computeIfAbsent(hash, _hash -> new BufferAllocator(BUFFER_ALLOCATOR_CAPACITY));
             BufferBuilder bufferBuilder = new BufferBuilder(allocator, pipeline.getVertexFormatMode(), pipeline.getVertexFormat());
             BATCHED_DRAWS.put(hash, new BatchedDraw(bufferBuilder, pipeline, textureSetup, lineWidth, translucent));
 
@@ -264,11 +267,14 @@ public class Renderer {
             RenderSystem.bindDefaultUniforms(renderPass);
             renderPass.setUniform("DynamicTransforms", dynamicTransforms);
 
+            GpuSampler linearSampler = RenderSystem.getSamplerCache().get(FilterMode.LINEAR);
             if (draw.textureSetup.texure0() != null) {
-                renderPass.bindSampler("Sampler0", draw.textureSetup.texure0());
+                GpuSampler s0 = draw.textureSetup.sampler0() != null ? draw.textureSetup.sampler0() : linearSampler;
+                renderPass.bindTexture("Sampler0", draw.textureSetup.texure0(), s0);
             }
             if (draw.textureSetup.texure2() != null) {
-                renderPass.bindSampler("Sampler2", draw.textureSetup.texure2());
+                GpuSampler s2 = draw.textureSetup.sampler2() != null ? draw.textureSetup.sampler2() : linearSampler;
+                renderPass.bindTexture("Sampler2", draw.textureSetup.texure2(), s2);
             }
 
             renderPass.setVertexBuffer(0, draw.vertices);
@@ -283,7 +289,7 @@ public class Renderer {
 
     private static GpuBufferSlice setupDynamicTransforms(float lineWidth, boolean translucent) {
         return RenderSystem.getDynamicUniforms()
-                .write(RenderSystem.getModelViewMatrix(), translucent ? COLOR_MODULATOR_TRANSLUCENT : COLOR_MODULATOR, new Vector3f(), RenderSystem.getTextureMatrix(), lineWidth);
+                .write(RenderSystem.getModelViewMatrix(), translucent ? COLOR_MODULATOR_TRANSLUCENT : COLOR_MODULATOR, new Vector3f(), new Matrix4f());
     }
 
     private static GpuTextureView getMainColorTexture() {
